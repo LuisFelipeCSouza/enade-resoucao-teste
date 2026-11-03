@@ -1,0 +1,21 @@
+/*-- scss:defaults --*/
+// Paleta GREI (igual ao template TemplateBeamerUFC/libs/ufc_format.cls)
+$body-bg: #ffffff;
+$body-color: #22262b;
+$presentation-heading-color: #2f5d4b;
+$link-color: #2f5d4b;
+$link-color-hover: #244a3c;
+$selection-bg: #f4d525;
+
+/*-- scss:rules --*/
+.reveal .slide-number {
+  color: #7a828c;
+}
+
+.reveal .callout-important {
+  border-left-color: #d70000;
+}
+
+.reveal .callout-important .callout-title-container {
+  color: #d70000;
+}

@@ -1,0 +1,448 @@
+% =====================================================================
+%  Resolução de exercícios — Sistemas Elétricos de Potência
+%  Questões 51 (abertura de linha) e 24 (fluxo de potência)
+%  Versão com o template GREI (TemplateBeamerUFC/libs/ufc_format.cls)
+%  Compilar com pdflatex a partir desta pasta (beamer/)
+% =====================================================================
+\documentclass[aspectratio=169]{../../TemplateBeamerUFC/libs/ufc_format}
+% as figuras/fundo/logo da classe usam caminhos "libs/..." relativos à raiz
+% do template; este graphicspath resolve esses caminhos a partir daqui.
+\graphicspath{{../../TemplateBeamerUFC/}}
+\input{../../TemplateBeamerUFC/libs/preamble.tex}
+
+\usepackage{icomma}            % vírgula decimal em modo matemático: 0,5
+\usepackage{booktabs}
+\usepackage[american,cuteinductors]{circuitikz}
+\usetikzlibrary{arrows.meta,calc}
+\ctikzset{bipoles/length=1.05cm}
+
+% ---------------------------------------------------------------------
+%  Cores neutras só para as figuras (traço/rótulos discretos); as cores
+%  de destaque (verde, amarelo, azul, vermelho) vêm do template GREI
+%  (blue_theme, yellow, green_ufc, red), já definidas em ufc_format.cls.
+% ---------------------------------------------------------------------
+\definecolor{Ink}{RGB}{34, 38, 43}
+\definecolor{Mute}{RGB}{122, 130, 140}
+
+% rótulo de passo (usa o verde do template)
+\newcommand{\passo}[1]{{\color{blue_theme}\bfseries #1}\enspace}
+
+% ---------------------------------------------------------------------
+%  Símbolos para diagramas unifilares (TikZ puro)
+% ---------------------------------------------------------------------
+\tikzset{
+  barra/.style={line width=2.2pt,Ink},
+  fio/.style={line width=0.8pt,Ink},
+  gerador/.pic={
+    \draw[fio,fill=white] (0,0) circle (0.36);
+    \draw[fio] (-0.2,0) sin (-0.1,0.12) cos (0,0) sin (0.1,-0.12) cos (0.2,0);
+  },
+  trafo/.pic={
+    \draw[fio] (-0.62,0) -- (-0.44,0) (0.44,0) -- (0.62,0);
+    \draw[fio,fill=white] (-0.17,0) circle (0.27);
+    \draw[fio] (0.17,0) circle (0.27);
+  },
+  rot/.style={font=\footnotesize,Ink},
+  rotb/.style={font=\scriptsize,Mute},
+  numbarra/.style={circle,draw=Ink,line width=0.6pt,inner sep=1.2pt,
+                   font=\scriptsize,fill=white},
+}
+
+% ---------------------------------------------------------------------
+%  Figura: unifilar da Questão 51
+% ---------------------------------------------------------------------
+\newcommand{\unifilarQcinquentaum}{%
+\begin{tikzpicture}[scale=0.78]
+  % geradores
+  \draw[fio] (0.36,2) -- (1.2,2);   \pic at (0,2) {gerador};
+  \node[rot] at (0,1.35) {$G_1$};
+  \draw[fio] (9.6,2) -- (10.44,2);  \pic at (10.8,2) {gerador};
+  \node[rot] at (10.8,1.35) {$G_2$};
+  % barras
+  \foreach \x in {1.2,3.6,7.2,9.6} \draw[barra] (\x,0.55) -- (\x,3.45);
+  \node[rot,above] at (1.2,3.45) {20 kV};
+  \node[rot,above] at (3.6,3.45) {250 kV};
+  \node[rot,above] at (7.2,3.45) {250 kV};
+  \node[rot,above] at (9.6,3.45) {25 kV};
+  % transformadores
+  \foreach \y/\n in {3.0/1,1.0/2}{
+    \draw[fio] (1.2,\y) -- (1.78,\y) (3.02,\y) -- (3.6,\y);
+    \pic at (2.4,\y) {trafo};
+    \node[rot] at (2.4,\y-0.62) {$T_{\n}$};}
+  \foreach \y/\n in {3.0/3,1.0/4}{
+    \draw[fio] (7.2,\y) -- (7.78,\y) (9.02,\y) -- (9.6,\y);
+    \pic at (8.4,\y) {trafo};
+    \node[rot] at (8.4,\y-0.62) {$T_{\n}$};}
+  % linhas
+  \draw[fio] (3.6,2.4) -- node[rot,above] {$j125\,\Omega$} (7.2,2.4);
+  \draw[fio] (3.6,1.6) -- node[rot,below] {$j125\,\Omega$} (7.2,1.6);
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+%  Figura: circuito equivalente em pu da Questão 51
+%  #1 = 0 -> sistema completo ; #1 = 1 -> linha 2 fora de operação
+% ---------------------------------------------------------------------
+\newcommand{\equivQcinquentaum}[1]{%
+\begin{circuitikz}[scale=0.74, transform shape, line width=0.7pt]
+  % fontes e reatâncias dos geradores
+  \draw (0,0) to[sV, l=$E_1\angle\delta$] (0,2.4)
+        to[L, l=$j0{,}1$] (2,2.4);
+  \draw (10,0) to[sV, l_=$E_2\angle 0^\circ$] (10,2.4)
+        to[L, l_=$j0{,}1$] (8,2.4);
+  % nós (barras) como ligações verticais
+  \foreach \x in {2,4,6,8} \draw (\x,1.7) -- (\x,3.1);
+  % T1 // T2
+  \draw (2,3.1) to[L, l=$j0{,}2$] (4,3.1);
+  \draw (2,1.7) to[L, l_=$j0{,}2$] (4,1.7);
+  % LT1 // LT2
+  \draw (4,3.1) to[L, l=$j0{,}2$] (6,3.1);
+  \ifnum#1=0
+    \draw (4,1.7) to[L, l_=$j0{,}2$] (6,1.7);
+  \else
+    \draw[Mute!50, dashed] (4,1.7) -- (6,1.7);
+    \draw[red, line width=1.4pt] (4.75,1.45) -- (5.25,1.95) (4.75,1.95) -- (5.25,1.45);
+    \node[font=\footnotesize, red] at (5,1.05) {aberta};
+  \fi
+  % T3 // T4
+  \draw (6,3.1) to[L, l=$j0{,}2$] (8,3.1);
+  \draw (6,1.7) to[L, l_=$j0{,}2$] (8,1.7);
+  % referência
+  \draw (0,0) -- (10,0);
+  % rótulos dos blocos
+  \foreach \x/\t in {1/G_1, 3/T_1\parallel T_2, 5/L_1\parallel L_2, 7/T_3\parallel T_4, 9/G_2}
+    \node[font=\footnotesize, blue_theme] at (\x,4.05) {$\t$};
+  % rótulos das barras
+  \foreach \x/\t in {2/20 kV, 4/250 kV, 6/250 kV, 8/25 kV}
+    \node[font=\scriptsize, Mute, fill=white, inner sep=1pt] at (\x,0.55) {\t};
+\end{circuitikz}}
+
+% ---------------------------------------------------------------------
+%  Figura: unifilar da Questão 24
+%  #1 = 0 -> enunciado ; #1 = 1 -> com tensões e fluxos da solução
+% ---------------------------------------------------------------------
+\newcommand{\unifilarQvintequatro}[1]{%
+\begin{tikzpicture}[scale=0.85]
+  \draw[fio] (0.36,1) -- (1.2,1);   \pic at (0,1) {gerador};
+  \draw[fio] (7.6,1) -- (8.44,1);   \pic at (8.8,1) {gerador};
+  \foreach \x in {1.2,4.4,7.6} \draw[barra] (\x,0.35) -- (\x,1.65);
+  \foreach \x/\n in {1.2/1,4.4/2,7.6/3} \node[numbarra] at (\x,2.0) {\n};
+  \draw[fio] (1.2,1) -- node[rot,above] {$j0{,}2$} (4.4,1);
+  \draw[fio] (4.4,1) -- node[rot,above] {$j0{,}2$} (7.6,1);
+  % carga
+  \draw[fio,-{Latex[length=2.2mm]}] (4.4,0.6) -- (4.85,0.6) -- (4.85,-0.15);
+  \node[rot,anchor=north west] at (7.7,0.4) {$S_{G3}=0{,}5$};
+  \ifnum#1=1
+    % fluxos
+    \draw[red,line width=1pt,-{Latex[length=2mm]}] (2.0,0.62) -- (3.6,0.62);
+    \node[font=\scriptsize,red,below] at (2.8,0.6) {$S_{12}=0{,}5$};
+    \draw[red,line width=1pt,-{Latex[length=2mm]}] (6.8,0.62) -- (5.3,0.62);
+    \node[font=\scriptsize,red,below] at (6.1,0.6) {$S_{32}=0{,}5$};
+    \node[font=\scriptsize,red,anchor=north] at (4.85,-0.2) {$S_{c}=1{,}0-j0{,}1$};
+    % tensões
+    \node[font=\scriptsize,blue_theme,anchor=south] at (1.2,2.25) {$1\angle 0^\circ$};
+    \node[font=\scriptsize,blue_theme,anchor=south] at (4.4,2.25) {$1{,}005\angle{-5{,}71^\circ}$};
+    \node[font=\scriptsize,blue_theme,anchor=south] at (7.6,2.25) {$1\angle 0^\circ$};
+  \fi
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+\title[Resolução SEP]{\huge\textbf{Resolução de Exercícios}}
+\subtitle{Sistemas Elétricos de Potência --- Questões 51 e 24}
+\author{Luis Felipe Souza}
+\institute[GREI/UFC]{
+    \department{GREI -- Grupo de Redes Elétricas Inteligentes}
+    \newline
+    \ufc
+}
+\date{}
+
+\begin{document}
+% insert the code style (herdado do template GREI)
+\input{../../TemplateBeamerUFC/libs/code_style}
+
+\begin{frame}{}
+    \maketitle
+\end{frame}
+
+\begin{frame}{Sumário}
+    \begin{multicols}{2}
+        \tableofcontents
+    \end{multicols}
+\end{frame}
+
+% =====================================================================
+\section{Questão 51 --- Perda de uma linha de transmissão}
+% =====================================================================
+
+\begin{frame}{Questão 51 --- Enunciado}
+  \centering
+  \vspace*{-0.6em}
+  \unifilarQcinquentaum
+
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      \begin{tabular}{@{}ll@{}}
+        \toprule
+        $G_1$ & 100 MVA, 20 kV, $X=10\%$\\
+        $G_2$ & 100 MVA, 25 kV, $X=10\%$\\
+        $T_1,T_2$ & 50 MVA, 20/250 kV, $X=10\%$\\
+        $T_3,T_4$ & 50 MVA, 25/250 kV, $X=10\%$\\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      Sistema sem perdas, $P_{12}=1{,}0$~pu com tensões nominais.
+      Uma linha é perdida; tensões dos geradores e abertura angular
+      \alert{inalteradas}. \\[0.3em]
+      \textbf{Nova potência ativa transmitida, em pu?}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Questão 51 --- Estratégia}
+  Num sistema sem perdas, a potência transferida entre duas fontes é
+  \[
+    P = \frac{E_1\,E_2}{X_{eq}}\,\sin\delta .
+  \]
+  \pause
+  Se $E_1$, $E_2$ e $\delta$ \alert{não mudam}, então $P\propto 1/X_{eq}$:
+  \[
+    \boxed{\;P' = P\,\frac{X_{eq}}{X_{eq}'}\;}
+  \]
+  \pause
+  Basta, portanto:
+  \begin{enumerate}
+    \item escolher as bases e passar tudo para pu;
+    \item calcular $X_{eq}$ antes e depois da perda da linha.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Questão 51 --- Passo 1: bases}
+  \begin{columns}[c]
+    \begin{column}{0.48\textwidth}
+      \passo{Potência base} $S_b = 100$~MVA (comum a todo o sistema)
+
+      \vspace{0.6em}\pause
+      \passo{Tensões base} definidas pelas relações dos transformadores:
+      \begin{itemize}
+        \item zona de $G_1$: 20 kV
+        \item zona das linhas: 250 kV
+        \item zona de $G_2$: 25 kV
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \pause
+      \passo{Impedância base} na zona das linhas:
+      \[
+        Z_b = \frac{V_b^2}{S_b} = \frac{(250)^2}{100} = 625~\Omega
+      \]
+      \pause
+      \small As tensões nominais dos equipamentos coincidem com as tensões
+      base de suas zonas, então só a potência base precisa ser corrigida.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Questão 51 --- Passo 2: reatâncias em pu}
+  Mudança de base:\quad
+  $X_{\text{novo}} = X_{\text{velho}}
+   \left(\dfrac{S_{b,\text{novo}}}{S_{b,\text{velho}}}\right)
+   \left(\dfrac{V_{b,\text{velho}}}{V_{b,\text{novo}}}\right)^{2}$
+
+  \vspace{0.8em}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Elemento & Cálculo & $X$ (pu) \\ \midrule
+    \pause
+    $G_1$, $G_2$ & já estão em 100 MVA e tensão nominal & $0{,}10$ \\
+    \pause
+    $T_1 \dots T_4$ & $0{,}10 \times \dfrac{100}{50}$ & $0{,}20$ \\[0.6em]
+    \pause
+    Cada linha & $\dfrac{125}{625}$ & $0{,}20$ \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Questão 51 --- Passo 3: circuito equivalente antes da falha}
+  \centering
+  \equivQcinquentaum{0}
+
+  \vspace{0.3em}\pause
+  \raggedright
+  Cada par em paralelo vale $0{,}2\parallel 0{,}2 = 0{,}1$:
+  \[
+    X_{eq} = \underbrace{0{,}1}_{G_1} + \underbrace{0{,}1}_{T_1\parallel T_2}
+           + \underbrace{0{,}1}_{L_1\parallel L_2} + \underbrace{0{,}1}_{T_3\parallel T_4}
+           + \underbrace{0{,}1}_{G_2} = \alert{0{,}5~\text{pu}}
+  \]
+\end{frame}
+
+\begin{frame}{Questão 51 --- Passo 4: circuito equivalente após a perda da linha}
+  \centering
+  \equivQcinquentaum{1}
+
+  \vspace{0.3em}\pause
+  \raggedright
+  Só o bloco das linhas muda: agora resta uma linha de $0{,}2$~pu.
+  \[
+    X_{eq}' = 0{,}1 + 0{,}1 + \alert{0{,}2} + 0{,}1 + 0{,}1 = \alert{0{,}6~\text{pu}}
+  \]
+\end{frame}
+
+\begin{frame}{Questão 51 --- Resultado}
+  \vspace*{-0.4em}
+  \[
+    P' = P\,\frac{X_{eq}}{X_{eq}'} = 1{,}0 \times \frac{0{,}5}{0{,}6}
+  \]
+  \alertbox{\centering $P' = \dfrac{5}{6} \approx 0{,}833$~pu}
+  \pause
+  \passo{Conferência} Com $E_1=E_2=1{,}0$: $\sin\delta = P\,X_{eq} = 0{,}5
+  \Rightarrow \delta = 30^\circ$. Depois: $P' = \sin 30^\circ / 0{,}6 = 0{,}833$~pu.
+
+  \vspace{0.3em}\pause
+  \passo{Por que não cai pela metade?} A linha perdida é só uma parte da
+  reatância total: $X_{eq}$ sobe de $0{,}5$ para $0{,}6$ (20\,\%), e a potência
+  cai na mesma proporção inversa.
+
+  \vspace{0.3em}\pause
+  {\footnotesize\color{black!55} Obs.: se as tensões mantidas fossem as \emph{terminais}
+  dos geradores (sem $X_G$ no caminho), seria $0{,}3/0{,}4 = 0{,}75$~pu.}
+\end{frame}
+
+% =====================================================================
+\section{Questão 24 --- Fluxo de potência em três barras}
+% =====================================================================
+
+\begin{frame}{Questão 24 --- Enunciado}
+  \centering \unifilarQvintequatro{0}
+
+  \vspace{0.5em}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      Potência injetada na barra 3 e impedâncias em pu.
+      Tensões nas barras 1 e 3 iguais a $1{,}0$~pu. \\[0.4em]
+      \textbf{Tensão na barra 2 e fluxo de potência saindo da barra 1
+      para a barra 2?}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{enumerate}[(A)]
+        \item $1{,}0$ pu e $1{,}0$ pu
+        \item $1{,}0-j0{,}1$ pu e $1{,}0$ pu
+        \item $1{,}0+j0{,}1$ pu e $0{,}5$ pu
+        \item $1{,}0-j0{,}1$ pu e $0{,}5$ pu
+        \item $1{,}0+j0{,}1$ pu e $1{,}0$ pu
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Questão 24 --- Leitura dos dados}
+  \begin{itemize}
+    \item $V_1 = V_3 = 1{,}0\angle 0^\circ$ pu \quad (fasores dados como $1{,}0$)
+    \item $S_{G3} = 0{,}5 + j0$ pu \quad (só potência ativa)
+    \item $x = 0{,}2$ pu em cada trecho
+  \end{itemize}
+  \pause
+  \vspace{0.6em}
+  \passo{Ideia} A carga da barra 2 é desconhecida, mas na \alert{barra 3}
+  conhecemos tensão \emph{e} potência. Daí sai a corrente do trecho 3--2,
+  depois $V_2$ e, por fim, o fluxo 1--2.
+\end{frame}
+
+\begin{frame}{Questão 24 --- Passos 1 e 2: corrente e tensão na barra 2}
+  \passo{Passo 1} Corrente que sai da barra 3 em direção à barra 2:
+  \[
+    I_{32} = \left(\frac{S_{G3}}{V_3}\right)^{\!*}
+           = \left(\frac{0{,}5}{1\angle 0^\circ}\right)^{\!*} = 0{,}5\angle 0^\circ~\text{pu}
+  \]
+  \pause
+  \passo{Passo 2} Queda no trecho 3--2:
+  \[
+    V_2 = V_3 - jx\,I_{32} = 1 - j0{,}2 \times 0{,}5
+        = \alert{1{,}0 - j0{,}1~\text{pu}}
+  \]
+  \pause
+  {\small\color{black!55} Em módulo e ângulo: $|V_2| = 1{,}005$~pu,
+  $\theta_2 = -5{,}71^\circ$.}
+\end{frame}
+
+\begin{frame}{Questão 24 --- Passo 3: fluxo da barra 1 para a barra 2}
+  \[
+    I_{12} = \frac{V_1 - V_2}{jx} = \frac{1 - (1 - j0{,}1)}{j0{,}2}
+           = \frac{j0{,}1}{j0{,}2} = 0{,}5~\text{pu}
+  \]
+  \pause
+  \[
+    S_{12} = V_1\, I_{12}^{*} = 1 \times 0{,}5 = \alert{0{,}5 + j0~\text{pu}}
+  \]
+  \pause
+  \alertbox{\centering Alternativa \textbf{(D)}:\quad $V_2 = 1{,}0 - j0{,}1$~pu
+    \quad e \quad $S_{12} = 0{,}5$~pu}
+\end{frame}
+
+\begin{frame}{Questão 24 --- Diagrama fasorial (em escala)}
+  \centering
+  \begin{tikzpicture}[>={Latex[length=2.4mm]}]
+    \draw[->,green_ufc,line width=1.1pt] (0,0) -- (8,0)
+      node[above left,font=\small] {$V_3 = V_1 = 1\angle 0^\circ$};
+    \draw[->,red,line width=1.1pt] (0,0.22) -- node[above,font=\small] {$I_{32} = 0{,}5\angle 0^\circ$} (4,0.22);
+    \draw[->,Mute,line width=0.9pt] (8,0) -- (8,-0.8)
+      node[right,font=\small,pos=0.6] {$-jx\,I_{32} = -j0{,}1$};
+    \draw[->,blue_theme,line width=1.1pt] (0,0) -- (8,-0.8)
+      node[below,font=\small,pos=0.55,yshift=-2pt] {$V_2 = 1{,}0 - j0{,}1$};
+    \draw[Mute] (6,0) arc (0:-5.71:6);
+    \node[font=\footnotesize,Mute,anchor=west] at (6.05,-0.28) {$\theta_2$};
+  \end{tikzpicture}
+
+  \vspace{0.8em}\raggedright\small
+  \begin{itemize}
+    \pause
+    \item $S_{G3}$ é puramente ativa e $|V_3|=1$ $\Rightarrow$ $I_{32}$ fica
+          \alert{em fase} com $V_3$.
+    \pause
+    \item A queda $jx\,I_{32}$ é perpendicular à corrente: altera quase só o
+          \emph{ângulo} de $V_2$ ($\theta_2 = -5{,}71^\circ$); o módulo vai a $1{,}005$.
+    \pause
+    \item Conferência pela fórmula de transferência:
+          $P_{12} = \dfrac{|V_1||V_2|}{x}\sin\theta_{12}
+          = \dfrac{1 \times 1{,}005}{0{,}2}\,\sin 5{,}71^\circ = 0{,}5$~pu.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Questão 24 --- Interpretação física}
+  \centering
+  \unifilarQvintequatro{1}
+
+  \vspace{0.6em}\raggedright
+  \small
+  \begin{itemize}
+    \item Simetria: $V_1 = V_3$ e trechos iguais $\Rightarrow$ cada lado entrega
+          $0{,}5$ pu à carga ($P_c = 1{,}0$ pu).
+    \item Cada trecho consome $Q = |I|^2 x = 0{,}05$; como as fontes não
+          entregam reativo, os $0{,}1$ pu vêm da barra 2 (carga capacitiva).
+    \pause
+    \item (C) e (E) falham: com $V_2 = 1 + j0{,}1$, $I_{12} = -0{,}5$ e o
+          fluxo seria de 2 para 1.
+  \end{itemize}
+\end{frame}
+
+% =====================================================================
+\begin{frame}{}
+  \centering
+  \Large\textbf{Resumo das respostas}
+
+  \vspace{1.2em}
+  \begin{tabular}{rl}
+    \toprule
+    Questão 51 & $P' \approx 0{,}833$ pu \\[0.4em]
+    Questão 24 & Alternativa (D) \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,30 @@
+# LaTeX
+*.aux
+*.out
+*.log
+*.nav
+*.snm
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
+*.run.xml
+*.bbl
+*.bcf
+*.blg
+TemplateBeamerUFC/document.pdf
+
+# Quarto (saída renderizada; TemplateBeamerUFC/code/index.html NÃO é afetado)
+/.quarto/
+resolucao-exercicios/quarto/*_files/
+resolucao-exercicios/quarto/*.html
+
+# Python
+__pycache__/
+*.pyc
+
+# Node / Slidev
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+.pnpm-store/
