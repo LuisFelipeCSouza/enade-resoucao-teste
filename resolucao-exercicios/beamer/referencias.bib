@@ -1,0 +1,41 @@
+% Referências das duas versões do Beamer (resolucao.tex e resolucao_grei.tex).
+% biblatex + biber: o latexmk roda o biber sozinho.
+
+% pagetotal (e não pages): número total de páginas do livro, sai "466 pp.";
+% pages seria um trecho citado e sairia "p. 466".
+@book{bichels2018sep,
+  author    = {Bichels, Arlei},
+  title     = {Sistemas Elétricos de Potência: Métodos de Análise e Solução},
+  publisher = {EDUTFPR},
+  address   = {Curitiba},
+  year      = {2018},
+  isbn      = {978-85-7014-208-5},
+  url       = {http://repositorio.utfpr.edu.br/jspui/handle/1/4610},
+  pagetotal = {466}
+}
+
+% Apostila: o @book do biblatex não imprime institution nem organization,
+% então os dois foram juntados em publisher (sai "Rio de Janeiro, Brasil:
+% Departamento ..., mar. de 2005").
+@book{borges2005analise,
+  author    = {Carmen Lucia Tancredo Borges},
+  title     = {Análise de Sistemas de Potência},
+  year      = {2005},
+  month     = mar,
+  publisher = {Departamento de Eletrotécnica, Escola de Engenharia,
+               Universidade Federal do Rio de Janeiro},
+  address   = {Rio de Janeiro, Brasil},
+  editor    = {Sergio Sami Hazan and Leonardo Ney de Almeida Guerra},
+  note      = {Material didático/apostila}
+}
+
+@book{stevenson1986elementos,
+  author     = {Stevenson Jr., William D.},
+  title      = {Elementos de Análise de Sistemas de Potência},
+  edition    = {2},
+  year       = {1986},
+  location   = {São Paulo},
+  publisher  = {McGraw-Hill},
+  translator = {Arlindo Rodrigues Mayer and João Paulo Minussi and Somchai Ansuj},
+  langid     = {portuguese}
+}

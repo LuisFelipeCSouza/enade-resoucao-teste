@@ -1,0 +1,1665 @@
+% =====================================================================
+%  Resolução detalhada — Sistemas Elétricos de Potência
+%  Questões 51, 24 e 45, em texto corrido (A4): o que nos slides
+%  (beamer/resolucao_grei.tex) é dito oralmente vem aqui por extenso,
+%  com as deduções e as contas passo a passo.
+%  Compilar a partir desta pasta (documento/):
+%      latexmk -pdf resolucao_detalhada.tex     (pdflatex + biber)
+%  A bibliografia é a mesma dos slides: ../beamer/referencias.bib
+% =====================================================================
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm,
+            headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{icomma}            % vírgula decimal em modo matemático: 0,5
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[shortlabels]{enumitem}
+\usepackage{graphicx}
+\usepackage{pifont}            % \ding: marcas de certo/errado
+\usepackage{float}             % [H]: figura exatamente onde está no texto
+\usepackage{caption}
+\usepackage[american,cuteinductors]{circuitikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage{pgfplots}          % gráfico da potência instantânea (Q45)
+\pgfplotsset{compat=1.18}
+\providecommand{\sen}{\operatorname{sen}}   % "sen", como no enunciado da Q45
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\addbibresource{../beamer/referencias.bib}
+% deixa a URL quebrar em qualquer letra/número (sem isso ela vaza da margem)
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+\setcounter{biburlnumpenalty}{9000}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------
+%  Cores: as do template GREI (TemplateBeamerUFC/libs/ufc_format.cls)
+%  + os neutros das figuras dos slides
+% ---------------------------------------------------------------------
+\definecolor{blue_theme}{RGB}{47, 93, 75}     % verde GREI (estrutural)
+\definecolor{red}{RGB}{215, 0, 0}             % alerta/resposta
+\definecolor{green_ufc}{RGB}{81, 203, 238}    % azul claro (auxiliar)
+\definecolor{Ink}{RGB}{34, 38, 43}
+\definecolor{Mute}{RGB}{122, 130, 140}
+\colorlet{ZonaA}{green_ufc}
+\colorlet{ZonaB}{blue_theme}
+\colorlet{CorP}{blue_theme}   % Q45: potência ativa (média)
+\colorlet{CorS}{red}          % Q45: potência aparente (amplitude) / reativa
+
+% ---------------------------------------------------------------------
+%  Página: títulos, cabeçalho, numeração
+% ---------------------------------------------------------------------
+\titleformat{\section}{\Large\bfseries\color{blue_theme}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\large\bfseries\color{blue_theme}}{\thesubsection}{0.8em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{Ink}}{\thesubsubsection}{0.8em}{}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{Mute}Resolução detalhada --- Sistemas Elétricos de Potência}
+\fancyhead[R]{\small\color{Mute}GREI/UFC}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist{itemsep=0.2em,topsep=0.3em}
+\captionsetup{font=small,labelfont={bf,color=blue_theme}}
+
+% ---------------------------------------------------------------------
+%  Caixas
+% ---------------------------------------------------------------------
+% fórmula/conceito-chave
+\newtcolorbox{conceito}[1][]{colback=blue_theme!4,colframe=blue_theme,
+  boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+  coltitle=white,colbacktitle=blue_theme,fonttitle=\bfseries\small,#1}
+% resposta
+\newtcolorbox{resposta}[1][]{colback=red!4,colframe=red,boxrule=0.8pt,
+  arc=2pt,left=8pt,right=8pt,top=5pt,bottom=5pt,
+  coltitle=white,colbacktitle=red,fonttitle=\bfseries\small,
+  title=Resposta,#1}
+% observação/interpretação
+\newtcolorbox{observacao}[1][]{colback=green_ufc!8,colframe=green_ufc!70!black,
+  boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+  coltitle=white,colbacktitle=green_ufc!70!black,fonttitle=\bfseries\small,#1}
+
+% rótulo de passo (como nos slides)
+\newcommand{\passo}[1]{{\color{blue_theme}\bfseries #1}\enspace}
+% marcas de certo/errado (tabela de alternativas)
+\newcommand{\ok}{\textcolor{blue_theme}{\ding{51}}}
+\newcommand{\nok}{\textcolor{red}{\ding{55}}}
+
+% ---------------------------------------------------------------------
+%  Símbolos para diagramas unifilares (os mesmos dos slides)
+% ---------------------------------------------------------------------
+\tikzset{
+  barra/.style={line width=2.2pt,Ink},
+  fio/.style={line width=0.8pt,Ink},
+  gerador/.pic={
+    \draw[fio,fill=white] (0,0) circle (0.36);
+    \draw[fio] (-0.2,0) sin (-0.1,0.12) cos (0,0) sin (0.1,-0.12) cos (0.2,0);
+  },
+  trafo/.pic={
+    \draw[fio] (-0.62,0) -- (-0.44,0) (0.44,0) -- (0.62,0);
+    \fill[white] (-0.17,0) circle (0.27) (0.17,0) circle (0.27);
+    \draw[fio] (-0.17,0) circle (0.27) (0.17,0) circle (0.27);
+  },
+  rot/.style={font=\footnotesize,Ink},
+  numbarra/.style={circle,draw=Ink,line width=0.6pt,inner sep=1.2pt,
+                   font=\scriptsize,fill=white},
+}
+\ctikzset{bipoles/length=1.05cm}
+
+% ---------------------------------------------------------------------
+%  Questão 51: unifilar (o mesmo desenho dos slides)
+%  #1 = escala do tikzpicture; os raios dos pics não acompanham o scale,
+%  então os rótulos G e T ficam a raio/escala abaixo do centro.
+% ---------------------------------------------------------------------
+\newcommand{\circuitoQcinquentaum}[1]{%
+  \pgfmathsetmacro{\dG}{0.36/#1}%
+  \pgfmathsetmacro{\dT}{0.30/#1}%
+  \draw[fio] (0.36,2) -- (1.2,2);   \pic at (0,2) {gerador};
+  \node[rot,anchor=north] at (0,2-\dG) {$G_1$};
+  \draw[fio] (9.6,2) -- (10.44,2);  \pic at (10.8,2) {gerador};
+  \node[rot,anchor=north] at (10.8,2-\dG) {$G_2$};
+  \foreach \x in {1.2,3.6,7.2,9.6} \draw[barra] (\x,0.55) -- (\x,3.45);
+  \node[rot,above] at (1.2,3.45) {20 kV};
+  \node[rot,above] at (3.6,3.45) {250 kV};
+  \node[rot,above] at (7.2,3.45) {250 kV};
+  \node[rot,above] at (9.6,3.45) {25 kV};
+  \foreach \y/\n in {3.0/1,1.0/2}{
+    \draw[fio] (1.2,\y) -- (1.78,\y) (3.02,\y) -- (3.6,\y);
+    \pic at (2.4,\y) {trafo};
+    \node[rot,anchor=north,inner sep=1pt] at (2.4,\y-\dT) {$T_{\n}$};}
+  \foreach \y/\n in {3.0/3,1.0/4}{
+    \draw[fio] (7.2,\y) -- (7.78,\y) (9.02,\y) -- (9.6,\y);
+    \pic at (8.4,\y) {trafo};
+    \node[rot,anchor=north,inner sep=1pt] at (8.4,\y-\dT) {$T_{\n}$};}
+  \draw[fio] (3.6,2.4) -- node[rot,above] {$j125\,\Omega$} (7.2,2.4);
+  \draw[fio] (3.6,1.6) -- node[rot,below] {$j125\,\Omega$} (7.2,1.6);
+}
+\newcommand{\unifilarQcinquentaum}{%
+\begin{tikzpicture}[scale=0.85]\circuitoQcinquentaum{0.85}\end{tikzpicture}}
+
+% zonas de tensão base (estáticas: todas de uma vez)
+% \zonaQcinquentaum{x ini}{x fim}{cor}{nome}{V_b em kV}{elementos}
+\newcommand{\zonaQcinquentaum}[6]{%
+  \fill[#3!13] (#1,-0.05) rectangle (#2,4.05);
+  \node[anchor=south,font=\small,text=#3!75!black,inner sep=2pt]
+    at ({(#1+#2)/2},4.05) {\textbf{#4}: $V_b = #5$~kV};
+  \node[anchor=north,align=center,font=\footnotesize,text=Ink,inner sep=2pt]
+    at ({(#1+#2)/2},-0.05) {#6};}
+% fronteira tracejada, interrompida onde ficam os rótulos T
+\newcommand{\fronteiraQcinquentaum}[1]{%
+  \draw[Ink!75,line width=0.7pt,dash pattern=on 3pt off 2pt]
+    (#1,4.05) -- (#1,3-\dT) (#1,2.45-\dT) -- (#1,1-\dT);}
+\newcommand{\zonasQcinquentaum}{%
+\begin{tikzpicture}[scale=0.95]
+  \zonaQcinquentaum{-1.35}{2.4}{ZonaA}{Zona 1}{20}{$G_1$ e lado de\\20 kV de $T_1$, $T_2$}
+  \zonaQcinquentaum{2.4}{8.4}{ZonaB}{Zona 2}{250}{lado de 250 kV de $T_1$ a $T_4$\\e as duas linhas}
+  \zonaQcinquentaum{8.4}{12.15}{ZonaA}{Zona 3}{25}{lado de 25 kV de\\$T_3$, $T_4$ e $G_2$}
+  \circuitoQcinquentaum{0.95}
+  \fronteiraQcinquentaum{2.4}
+  \fronteiraQcinquentaum{8.4}
+\end{tikzpicture}}
+
+% circuito equivalente em pu; [#1] = escala; #2 = 0 completo, 1 sem a linha 2
+\newcommand{\equivQcinquentaum}[2][0.9]{%
+\begin{circuitikz}[scale=#1, transform shape, line width=0.7pt]
+  \draw (0,0) to[sV, l=$E_1\angle\delta$] (0,2.4)
+        to[L, l=$j0{,}1$] (2,2.4);
+  \draw (10,0) to[sV, l_=$E_2\angle 0^\circ$] (10,2.4)
+        to[L, l_=$j0{,}1$] (8,2.4);
+  \foreach \x in {2,4,6,8} \draw (\x,1.7) -- (\x,3.1);
+  \draw (2,3.1) to[L, l=$j0{,}2$] (4,3.1);
+  \draw (2,1.7) to[L, l_=$j0{,}2$] (4,1.7);
+  \draw (4,3.1) to[L, l=$j0{,}2$] (6,3.1);
+  \ifnum#2=0
+    \draw (4,1.7) to[L, l_=$j0{,}2$] (6,1.7);
+  \else
+    \draw[Mute!50, dashed] (4,1.7) -- (6,1.7);
+    \draw[red, line width=1.4pt] (4.75,1.45) -- (5.25,1.95) (4.75,1.95) -- (5.25,1.45);
+    \node[font=\footnotesize, red] at (5,1.05) {aberta};
+  \fi
+  \draw (6,3.1) to[L, l=$j0{,}2$] (8,3.1);
+  \draw (6,1.7) to[L, l_=$j0{,}2$] (8,1.7);
+  \draw (0,0) -- (10,0);
+  \foreach \x/\t in {1/G_1, 3/T_1\parallel T_2, 5/L_1\parallel L_2, 7/T_3\parallel T_4, 9/G_2}
+    \node[font=\footnotesize, blue_theme] at (\x,4.05) {$\t$};
+  \foreach \x/\t in {2/20 kV, 4/250 kV, 6/250 kV, 8/25 kV}
+    \node[font=\scriptsize, Mute, fill=white, inner sep=1pt] at (\x,0.55) {\t};
+\end{circuitikz}}
+
+% duas fontes ligadas por uma reatância (equação potência-ângulo)
+\newcommand{\duasfontes}{%
+\begin{circuitikz}[scale=0.95, transform shape, line width=0.7pt]
+  \draw (0,0) to[sV, l=$E_1\angle\delta$] (0,1.8)
+        to[L, l=$jX$] (3.6,1.8)
+        to[sV, l=$E_2\angle 0^\circ$] (3.6,0) -- (0,0);
+  \draw[red,line width=1pt,-{Latex[length=2mm]}] (1.2,1.2) -- (2.4,1.2)
+    node[midway,below,font=\small] {$I$};
+\end{circuitikz}}
+
+% curva potência-ângulo genérica (x em graus)
+\newcommand{\curvaPdelta}{%
+\begin{tikzpicture}[x=0.035cm, y=1.5cm, >={Latex[length=2mm]}]
+  \draw[->,Ink] (0,0) -- (200,0) node[right] {$\delta$};
+  \draw[->,Ink] (0,0) -- (0,1.35) node[above] {$P$};
+  \draw[Mute,dashed] (0,1) -- (90,1) -- (90,0);
+  \draw[blue_theme,line width=1.1pt,domain=0:180,samples=61] plot (\x,{sin(\x)});
+  \node[above,font=\small] at (90,1) {$P_{\max} = E_1E_2/X$};
+  \node[below,font=\small] at (0,0) {$0$};
+  \node[below,font=\small] at (90,0) {$90^\circ$};
+  \node[below,font=\small] at (180,0) {$180^\circ$};
+  \node[font=\footnotesize,Mute,align=center] at (45,0.35) {região\\estável};
+  \node[font=\footnotesize,Mute,align=center] at (135,0.35) {região\\instável};
+\end{tikzpicture}}
+
+% curvas antes/depois da perda da linha, com delta = 30 graus
+\newcommand{\curvasQcinquentaum}{%
+\begin{tikzpicture}[x=0.045cm, y=1.45cm, >={Latex[length=2mm]}]
+  \draw[->,Ink] (0,0) -- (195,0) node[right] {$\delta$};
+  \draw[->,Ink] (0,0) -- (0,2.3) node[above] {$P$ (pu)};
+  \draw[blue_theme,line width=1.1pt,domain=0:180,samples=91] plot (\x,{2*sin(\x)});
+  \draw[red,line width=1.1pt,domain=0:180,samples=91] plot (\x,{sin(\x)/0.6});
+  \draw[Mute,dashed] (0,1) -- (30,1) (0,0.8333) -- (30,0.8333) (30,0) -- (30,1);
+  \draw[Mute,dashed] (0,2) -- (90,2) (0,1.6667) -- (90,1.6667) (90,0) -- (90,2);
+  \fill[blue_theme] (30,1) circle (1.8pt);
+  \fill[red] (30,0.8333) circle (1.8pt);
+  \node[left,font=\footnotesize] at (0,2) {$2{,}0$};
+  \node[left,font=\footnotesize] at (0,1.6667) {$1{,}667$};
+  \node[left,font=\footnotesize] at (0,1.06) {$1{,}0$};
+  \node[left,font=\footnotesize] at (0,0.78) {$0{,}833$};
+  \node[below,font=\footnotesize] at (30,0) {$30^\circ$};
+  \node[below,font=\footnotesize] at (90,0) {$90^\circ$};
+  \node[below,font=\footnotesize] at (180,0) {$180^\circ$};
+  \node[anchor=west,font=\small,align=left] at (200,1.3)
+    {\textcolor{blue_theme}{\rule[0.5ex]{1.4em}{1.1pt}}\ antes: $P = 2{,}0\,\sin\delta$\\[0.3em]
+     \textcolor{red}{\rule[0.5ex]{1.4em}{1.1pt}}\ depois: $P = 1{,}667\,\sin\delta$};
+\end{tikzpicture}}
+
+% linha k-m só com reatância
+\newcommand{\linhaKM}{%
+\begin{tikzpicture}[scale=1.0]
+  \draw[barra] (0,0.3) -- (0,1.3);
+  \draw[barra] (3.6,0.3) -- (3.6,1.3);
+  \draw[fio] (0,0.8) -- node[rot,above] {$jx$} (3.6,0.8);
+  \draw[red,line width=0.9pt,-{Latex[length=2mm]}] (1.1,0.55) -- (2.5,0.55)
+    node[midway,below,font=\footnotesize] {$I_{km}$};
+  \node[rot,below] at (0,0.3) {$V_k = |V_k|\angle\theta_k$};
+  \node[rot,below] at (3.6,0.3) {$V_m = |V_m|\angle\theta_m$};
+  \node[rot,above] at (0,1.3) {barra $k$};
+  \node[rot,above] at (3.6,1.3) {barra $m$};
+\end{tikzpicture}}
+
+% Questão 24: unifilar; [#1] escala; #2 = 0 enunciado, 1 com a solução
+\newcommand{\unifilarQvintequatro}[2][0.95]{%
+\begin{tikzpicture}[scale=#1]
+  \draw[fio] (0.36,1) -- (1.2,1);   \pic at (0,1) {gerador};
+  \draw[fio] (7.6,1) -- (8.44,1);   \pic at (8.8,1) {gerador};
+  \foreach \x in {1.2,4.4,7.6} \draw[barra] (\x,0.35) -- (\x,1.65);
+  \foreach \x/\n in {1.2/1,4.4/2,7.6/3} \node[numbarra] at (\x,2.0) {\n};
+  \draw[fio] (1.2,1) -- node[rot,above] {$j0{,}2$} (4.4,1);
+  \draw[fio] (4.4,1) -- node[rot,above] {$j0{,}2$} (7.6,1);
+  \draw[fio,-{Latex[length=2.2mm]}] (4.4,0.6) -- (4.85,0.6) -- (4.85,-0.15);
+  \node[rot,anchor=north west] at (7.7,0.4) {$S_{G3}=0{,}5$};
+  \ifnum#2=1
+    \draw[red,line width=1pt,-{Latex[length=2mm]}] (2.0,0.62) -- (3.6,0.62);
+    \node[font=\scriptsize,red,below] at (2.8,0.6) {$S_{12}=0{,}5$};
+    \draw[red,line width=1pt,-{Latex[length=2mm]}] (6.8,0.62) -- (5.3,0.62);
+    \node[font=\scriptsize,red,below] at (6.1,0.6) {$S_{32}=0{,}5$};
+    \node[font=\scriptsize,red,anchor=north] at (4.85,-0.2) {$S_{c}=1{,}0-j0{,}1$};
+    \node[font=\scriptsize,blue_theme,anchor=south] at (1.2,2.25) {$1\angle 0^\circ$};
+    \node[font=\scriptsize,blue_theme,anchor=south] at (4.4,2.25) {$1{,}005\angle{-5{,}71^\circ}$};
+    \node[font=\scriptsize,blue_theme,anchor=south] at (7.6,2.25) {$1\angle 0^\circ$};
+  \fi
+\end{tikzpicture}}
+
+% Questão 24: diagrama fasorial em escala
+\newcommand{\fasorialQvintequatro}{%
+\begin{tikzpicture}[>={Latex[length=2.4mm]}]
+  \draw[->,green_ufc!80!black,line width=1.1pt] (0,0) -- (10,0)
+    node[above left,font=\small] {$V_3 = V_1 = 1\angle 0^\circ$};
+  \draw[->,red,line width=1.1pt] (0,0.25) -- node[above,font=\small] {$I_{32} = 0{,}5\angle 0^\circ$} (5,0.25);
+  \draw[->,Mute,line width=0.9pt] (10,0) -- (10,-1)
+    node[right,font=\small,pos=0.6] {$-jx\,I_{32} = -j0{,}1$};
+  \draw[->,blue_theme,line width=1.1pt] (0,0) -- (10,-1)
+    node[below,font=\small,pos=0.55,yshift=-2pt] {$V_2 = 1{,}0 - j0{,}1$};
+  \draw[Mute] (7,0) arc (0:-5.71:7);
+  \node[font=\footnotesize,Mute,anchor=west] at (7.05,-0.33) {$\theta_2$};
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+%  Questão 45: curva de potência instantânea (pgfplots)
+%  p(t) = 500 - 1000 cos(2wt - 60°), w = 100*pi rad/s (f = 50 Hz);
+%  em graus, 2wt = 36000 t.
+%  \graficoQquarentacinco[opções do axis]{0 = enunciado | 1 = com P e S}
+% ---------------------------------------------------------------------
+\pgfplotsset{
+  q45/.style={
+    width=7cm, height=5.5cm,
+    xmin=0, xmax=0.02, ymin=-600, ymax=1600,
+    xtick={0,0.002,0.004,0.006,0.008,0.01,0.012,0.014,0.016,0.018,0.02},
+    ytick={-600,-400,...,1600},
+    scaled x ticks=false,
+    grid=major, major grid style={densely dotted,Ink!40},
+    xlabel={tempo em segundos}, ylabel={watt},
+    tick label style={font=\tiny,Ink}, label style={font=\scriptsize,Ink},
+    xticklabel style={/pgf/number format/.cd,fixed,precision=3,use comma,/tikz/.cd},
+    yticklabel style={/pgf/number format/.cd,use comma,1000 sep={}},
+    axis line style={Ink}, tick style={Ink!70},
+  },
+  % rótulos do tempo inclinados (slides, onde a figura é estreita)
+  q45 girado/.style={xticklabel style={rotate=45,anchor=north east,inner sep=1pt}},
+}
+\newcommand{\graficoQquarentacinco}[2][]{%
+\begin{tikzpicture}
+\begin{axis}[q45,#1]
+  \addplot[Ink,line width=1pt,domain=0:0.02,samples=241]
+    {500 - 1000*cos(36000*x - 60)};
+  \ifnum#2=1
+    \draw[Mute,line width=0.5pt] (axis cs:0,1500) -- (axis cs:0.02,1500)
+                                 (axis cs:0,-500) -- (axis cs:0.02,-500);
+    \addplot[CorP,line width=1pt,dashed,domain=0:0.02] {500};
+    \draw[CorS,line width=1pt,{Latex[length=1.8mm]}-{Latex[length=1.8mm]}]
+      (axis cs:0.00667,500) -- (axis cs:0.00667,1500)
+      node[midway,right,font=\scriptsize] {$S$};
+    \draw[CorS,line width=1pt,{Latex[length=1.8mm]}-{Latex[length=1.8mm]}]
+      (axis cs:0.01167,500) -- (axis cs:0.01167,-500)
+      node[midway,left,font=\scriptsize] {$S$};
+    \node[CorP,font=\scriptsize,fill=white,inner sep=1pt,anchor=west]
+      at (axis cs:0.0128,500) {$P$};
+    \node[font=\scriptsize,Ink,anchor=north west,inner sep=1.5pt]
+      at (axis cs:0.0085,1500) {$p_{\max}\approx 1500$};
+    \node[font=\scriptsize,Ink,anchor=south east,inner sep=1pt]
+      at (axis cs:0.0198,-500) {$p_{\min}\approx -500$};
+  \fi
+\end{axis}
+\end{tikzpicture}}
+% triângulo de potências
+\newcommand{\trianguloPotencias}{%
+\begin{tikzpicture}[scale=0.95, >={Latex[length=2.2mm]}]
+  \draw[->,CorP,line width=1.1pt] (0,0) -- (3.2,0)
+    node[midway,below,font=\small] {$P = S\cos\theta$};
+  \draw[->,CorS,line width=1.1pt] (3.2,0) -- (3.2,2.4)
+    node[midway,right,font=\small] {$Q = S\sen\theta$};
+  \draw[->,Ink,line width=1.1pt] (0,0) -- (3.2,2.4)
+    node[midway,above left,font=\small] {$S = VI$};
+  \draw[Mute] (0.9,0) arc (0:36.87:0.9);
+  \node[font=\small] at (1.2,0.32) {$\theta$};
+\end{tikzpicture}}
+
+% decomposição p(t) = P(1 - cos 2wt) - Q sen 2wt, com P = 500 W e Q = 866 var
+% (só no documento)
+\newcommand{\decomposicaoQquarentacinco}{%
+\begin{tikzpicture}
+\begin{axis}[q45, width=11cm, height=6.5cm,
+    ymin=-1000, ymax=1600, ytick={-1000,-500,...,1500},
+    tick label style={font=\footnotesize}, label style={font=\small},
+    legend style={font=\footnotesize,at={(1.03,1)},anchor=north west,draw=none},
+    legend cell align=left]
+  \addplot[Ink,line width=1.1pt,domain=0:0.02,samples=241]
+    {500 - 1000*cos(36000*x - 60)};
+  \addlegendentry{$p(t)$}
+  \addplot[CorP,line width=1pt,dashed,domain=0:0.02,samples=241]
+    {500*(1 - cos(36000*x))};
+  \addlegendentry{$P\,(1 - \cos 2\omega t)$}
+  \addplot[CorS,line width=1pt,dash dot,domain=0:0.02,samples=241]
+    {-866*sin(36000*x)};
+  \addlegendentry{$-Q\sen 2\omega t$}
+\end{axis}
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------
+\hypersetup{pdftitle={Resolução detalhada --- Questões 51, 24 e 45},
+            pdfauthor={Luis Felipe Carneiro de Souza}}
+
+\begin{document}
+
+\thispagestyle{plain}
+\begin{center}
+  \includegraphics[height=1.5cm]{../../TemplateBeamerUFC/libs/grei_full_logo.pdf}\par
+  \vspace{1em}
+  {\LARGE\bfseries\color{blue_theme} Resolução detalhada de exercícios\par}
+  \vspace{0.4em}
+  {\large Sistemas Elétricos de Potência --- Questões 51, 24 e 45\par}
+  \vspace{0.8em}
+  Luis Felipe Carneiro de Souza\par
+  {\small GREI -- Grupo de Redes Elétricas Inteligentes\\
+   Universidade Federal do Ceará\par}
+\end{center}
+
+\vspace{0.5em}
+\begin{observacao}[title=Sobre este documento]
+  Este texto acompanha a apresentação de slides sobre as mesmas questões. Nos
+  slides, boa parte da explicação é dada oralmente; aqui ela vem por extenso:
+  cada conteúdo usado é revisado com a dedução das fórmulas, e cada conta da
+  resolução é feita passo a passo, com as conferências. A organização é a
+  mesma da apresentação. Para cada questão: o enunciado, os conteúdos
+  envolvidos, a revisão desses conteúdos e a resolução.
+\end{observacao}
+
+\tableofcontents
+
+\subsection*{Notação e convenções}
+\begin{itemize}
+  \item Sistema trifásico equilibrado, representado por fase no diagrama
+        unifilar. Tensões são \emph{de linha} e potências são
+        \emph{trifásicas}, salvo aviso.
+  \item Grandezas em pu (por unidade) não têm unidade. O separador decimal é a
+        vírgula: $0{,}5$~pu.
+  \item Fasores: $V = |V|\angle\theta = |V|\cos\theta + j\,|V|\sin\theta$,
+        com $j = \sqrt{-1}$. O asterisco indica o conjugado:
+        $V^{*} = |V|\angle{-\theta}$.
+  \item $\operatorname{Re}\{\cdot\}$ e $\operatorname{Im}\{\cdot\}$ são as
+        partes real e imaginária. Ângulos em graus.
+  \item Linhas e transformadores sem perdas: representados só pela reatância
+        série.
+\end{itemize}
+
+% =====================================================================
+\section{Questão 51 --- Perda de uma linha de transmissão (ENADE 2008)}
+% =====================================================================
+
+\subsection{Enunciado}
+
+\begin{center}
+  \unifilarQcinquentaum
+\end{center}
+
+\begin{center}
+\begin{minipage}{0.75\textwidth}
+  Dados dos componentes:
+  \begin{itemize}[nosep]
+    \item Gerador $G_1$: 100 MVA, 20 kV, $X = 10\%$
+    \item Gerador $G_2$: 100 MVA, 25 kV, $X = 10\%$
+    \item Transformadores $T_1$ e $T_2$: 50 MVA, 20 kV/250 kV, $X = 10\%$
+    \item Transformadores $T_3$ e $T_4$: 50 MVA, 25 kV/250 kV, $X = 10\%$
+  \end{itemize}
+\end{minipage}
+\end{center}
+
+A figura acima apresenta um sistema de potência sem perdas. Suponha que,
+inicialmente, a potência ativa transmitida do gerador $G_1$ para o $G_2$ seja
+igual a 1,0~p.u., e que os dois estejam operando em suas tensões nominais. Em
+um dado instante, uma das linhas de transmissão é perdida. Supondo que as
+tensões dos geradores e a abertura angular permaneçam inalteradas, qual será a
+nova potência ativa transmitida, em p.u., nessa condição de regime?
+
+\subsection{Conteúdos envolvidos}
+
+A questão pede a potência transmitida depois de uma mudança na rede: uma das
+duas linhas sai de operação, enquanto as tensões dos geradores e a abertura
+angular entre eles ficam como estavam. Ela envolve conceitos de
+\textbf{estabilidade de SEP} e de \textbf{sistema por unidade}. Três
+conteúdos são necessários:
+
+\begin{enumerate}
+  \item \passo{Sistema por unidade (pu).} Os dados de cada equipamento estão
+        em porcentagem na base do próprio equipamento: potência nominal e
+        tensão nominal. Além disso, o sistema tem três níveis de tensão (20,
+        250 e 25~kV). Para montar um único circuito, todas as reatâncias
+        precisam estar na mesma base.
+  \item \passo{Associação de reatâncias.} Os transformadores e as linhas
+        estão em paralelo, e cada par está em série com os demais e com os
+        geradores. Tudo isso se reduz a uma reatância equivalente $X_{eq}$
+        entre os dois geradores.
+  \item \passo{Equação potência-ângulo.} É a relação, estudada em
+        estabilidade de SEP, entre a potência ativa transmitida entre duas
+        fontes, as tensões delas, a abertura angular $\delta$ e a reatância
+        entre elas. É ela que diz como a potência muda quando $X_{eq}$ muda.
+\end{enumerate}
+
+\subsection{Revisão do conteúdo}
+
+\subsubsection{Sistema por unidade}
+
+Num sistema de potência convivem tensões de poucos kV a centenas de kV e
+potências de kVA a GVA. Expressar cada grandeza como uma fração de um valor
+de referência, a \emph{base}, deixa os números na mesma ordem de grandeza e
+simplifica os cálculos \cite{stevenson1986elementos,bichels2018sep}:
+\begin{equation}
+  \text{valor em pu} = \frac{\text{valor real}}{\text{valor base}}.
+  \label{eq:pu}
+\end{equation}
+O valor em porcentagem é o valor em pu multiplicado por 100. Assim, uma
+reatância de $X = 10\,\%$ vale $0{,}10$~pu \emph{na base em que foi dada}.
+
+\paragraph{Escolha das bases.}
+As quatro grandezas de interesse (potência $S$, tensão $V$, corrente $I$ e
+impedância $Z$) estão ligadas por duas relações: $S = \sqrt{3}\,V I$ e,
+por fase, $Z = V_{\text{fase}}/I$. Por isso só duas delas podem ser
+escolhidas livremente. Na prática escolhem-se:
+\begin{itemize}
+  \item a potência base $S_b$ (trifásica), \emph{uma só para todo o sistema};
+  \item a tensão base $V_b$ (de linha), \emph{uma para cada zona} (ver
+        adiante).
+\end{itemize}
+As outras duas bases saem dessas. A corrente base vem de
+$S_b = \sqrt{3}\,V_b I_b$:
+\begin{equation}
+  I_b = \frac{S_b}{\sqrt{3}\,V_b}.
+  \label{eq:Ib}
+\end{equation}
+A impedância base é a tensão base de fase dividida pela corrente base:
+\begin{equation}
+  Z_b = \frac{V_b/\sqrt{3}}{I_b}
+      = \frac{V_b}{\sqrt{3}}\cdot\frac{\sqrt{3}\,V_b}{S_b}
+      = \frac{V_b^{2}}{S_b}.
+  \label{eq:Zb}
+\end{equation}
+Com $V_b$ em kV e $S_b$ em MVA, a Equação~\eqref{eq:Zb} já dá $Z_b$ em ohms,
+pois $(\text{kV})^2/\text{MVA} = 10^{6}\,\text{V}^2/10^{6}\,\text{VA} =
+\Omega$.
+
+\paragraph{Zonas e transformadores.}
+Considere um transformador ideal de tensões nominais $V_{1n}/V_{2n}$ e uma
+impedância $Z_2$ (em ohms) no lado 2. Refletida para o lado 1, ela vale
+$Z_2' = Z_2\,(V_{1n}/V_{2n})^{2}$. Escolhendo as tensões base dos dois lados
+na mesma relação do transformador, $V_{b1}/V_{b2} = V_{1n}/V_{2n}$, o valor
+em pu dessa impedância é o mesmo visto de qualquer lado:
+\begin{equation}
+  \frac{Z_2'}{Z_{b1}}
+  = \frac{Z_2\,(V_{1n}/V_{2n})^{2}}{V_{b1}^{2}/S_b}
+  = \frac{Z_2\,(V_{b1}/V_{b2})^{2}}{V_{b1}^{2}/S_b}
+  = \frac{Z_2}{V_{b2}^{2}/S_b}
+  = \frac{Z_2}{Z_{b2}}.
+  \label{eq:trafo-pu}
+\end{equation}
+Ou seja, em pu o transformador ideal passa a ter relação 1:1 e
+\emph{desaparece} do circuito; sobra apenas a sua reatância de dispersão.
+Por isso a tensão base muda ao atravessar cada transformador, na relação de
+transformação dele. Cada região delimitada por transformadores tem uma única
+tensão base e é chamada de \emph{zona}.
+
+\paragraph{Mudança de base.}
+Os fabricantes informam a reatância de cada equipamento em pu (ou \%) na
+base do próprio equipamento: a sua potência e a sua tensão nominais. O valor
+em ohms, porém, é um só, qualquer que seja a base:
+\[
+  Z_{\Omega} = Z_{\text{pu,velho}}\,Z_{b,\text{velho}}
+             = Z_{\text{pu,novo}}\,Z_{b,\text{novo}} .
+\]
+Isolando $Z_{\text{pu,novo}}$ e usando a Equação~\eqref{eq:Zb}:
+\[
+  Z_{\text{pu,novo}}
+  = Z_{\text{pu,velho}}\,\frac{Z_{b,\text{velho}}}{Z_{b,\text{novo}}}
+  = Z_{\text{pu,velho}}\,
+    \frac{V_{b,\text{velho}}^{2}/S_{b,\text{velho}}}
+         {V_{b,\text{novo}}^{2}/S_{b,\text{novo}}},
+\]
+que, reorganizada, dá a fórmula de mudança de base:
+\begin{conceito}[title=Mudança de base]
+  \begin{equation}
+    Z_{\text{pu,novo}} = Z_{\text{pu,velho}}
+    \left(\frac{S_{b,\text{novo}}}{S_{b,\text{velho}}}\right)
+    \left(\frac{V_{b,\text{velho}}}{V_{b,\text{novo}}}\right)^{2}
+    \label{eq:mudanca-base}
+  \end{equation}
+\end{conceito}
+Quando a tensão nominal do equipamento coincide com a tensão base da zona
+onde ele está ($V_{b,\text{velho}} = V_{b,\text{novo}}$), o último fator
+vale 1 e só a relação de potências altera o valor.
+
+\subsubsection{Associação de reatâncias}
+
+Reatâncias se associam como resistências. Em série, somam-se:
+\begin{equation}
+  X_s = X_1 + X_2 + \dots + X_n .
+  \label{eq:serie}
+\end{equation}
+Em paralelo, somam-se os inversos:
+\begin{equation}
+  \frac{1}{X_p} = \frac{1}{X_1} + \frac{1}{X_2} + \dots + \frac{1}{X_n}
+  \quad\Longrightarrow\quad
+  X_p = \frac{X_1 X_2}{X_1 + X_2}\ \ \text{(duas reatâncias)}.
+  \label{eq:paralelo}
+\end{equation}
+Duas reatâncias \emph{iguais} em paralelo valem metade de uma delas:
+$X_p = X\cdot X/(2X) = X/2$. Em pu, as mesmas regras valem, desde que todas
+as reatâncias estejam na mesma base.
+
+\subsubsection{Equação potência-ângulo}
+
+Em estudos de estabilidade, cada máquina síncrona é representada por uma
+tensão interna $E$ atrás da sua reatância. Num sistema sem perdas, tudo o
+que há entre as tensões internas de duas máquinas (reatâncias das máquinas,
+dos transformadores e das linhas) se reduz a uma única reatância $X$
+\cite{stevenson1986elementos}. Tomando a tensão da fonte 2 como referência
+angular, $E_2\angle 0^\circ$, a da fonte 1 fica adiantada de $\delta$:
+$E_1\angle\delta$ (Figura~\ref{fig:duasfontes}).
+
+\begin{figure}[H]
+  \centering
+  \duasfontes
+  \caption{Duas fontes ligadas por uma reatância $X$; $\delta$ é a abertura
+    angular entre elas.}
+  \label{fig:duasfontes}
+\end{figure}
+
+A corrente que vai da fonte 1 para a fonte 2 sai da lei de Ohm na
+reatância:
+\begin{equation}
+  I = \frac{E_1\angle\delta - E_2\angle 0^\circ}{jX}.
+  \label{eq:I-duasfontes}
+\end{equation}
+A potência complexa entregue pela fonte 1 é $S_1 = E_1\angle\delta\cdot
+I^{*}$. Conjugando a Equação~\eqref{eq:I-duasfontes} (o conjugado de $jX$
+é $-jX$):
+\[
+  I^{*} = \frac{E_1\angle{-\delta} - E_2}{-jX}.
+\]
+Multiplicando por $E_1\angle\delta$ e usando $\angle\delta\cdot
+\angle{-\delta} = 1$ e $1/(-j) = j$:
+\begin{align*}
+  S_1 &= \frac{E_1\angle\delta\,\bigl(E_1\angle{-\delta} - E_2\bigr)}{-jX}
+       = \frac{E_1^{2} - E_1E_2\angle\delta}{-jX}
+       = \frac{j}{X}\,\bigl(E_1^{2} - E_1E_2\angle\delta\bigr).
+\end{align*}
+Escrevendo $E_1E_2\angle\delta = E_1E_2\cos\delta + j\,E_1E_2\sin\delta$ e
+usando $j\cdot j = -1$:
+\begin{align*}
+  S_1 &= \frac{j}{X}\bigl(E_1^{2} - E_1E_2\cos\delta\bigr)
+        - \frac{j\cdot j}{X}\,E_1E_2\sin\delta \\
+      &= {\underbrace{\frac{E_1E_2}{X}\sin\delta}_{P}}
+        + j\,{\underbrace{\frac{E_1^{2} - E_1E_2\cos\delta}{X}}_{Q_1}}.
+\end{align*}
+A parte real é a potência ativa transmitida:
+\begin{conceito}[title=Equação potência-ângulo]
+  \begin{equation}
+    P = \frac{E_1\,E_2}{X}\,\sin\delta
+    \label{eq:potencia-angulo}
+  \end{equation}
+\end{conceito}
+
+Repetindo a conta para a potência que chega à fonte 2, $S_2 = E_2\,I^{*}$,
+a parte real é a mesma: como não há resistência, toda a potência ativa que
+sai de uma fonte chega à outra. Três consequências da
+Equação~\eqref{eq:potencia-angulo}:
+
+\begin{itemize}
+  \item \passo{Potência máxima.} $\sin\delta$ é máximo em $\delta =
+        90^\circ$, então $P_{\max} = E_1E_2/X$. Acima de $90^\circ$, aumentar
+        a abertura angular \emph{diminui} a potência, e as máquinas perdem o
+        sincronismo. $P_{\max}$ é o limite de estabilidade em regime
+        permanente (Figura~\ref{fig:curva-Pdelta}).
+  \item \passo{Sentido do fluxo.} $P > 0$ para $0 < \delta < 180^\circ$: a
+        potência ativa flui da fonte adiantada para a atrasada.
+  \item \passo{Papel da reatância.} Com $E_1$, $E_2$ e $\delta$ fixos, $P$ é
+        inversamente proporcional a $X$: aumentar a reatância entre as
+        fontes reduz a potência transmitida na mesma proporção.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \curvaPdelta
+  \caption{Curva potência-ângulo $P = P_{\max}\sin\delta$.}
+  \label{fig:curva-Pdelta}
+\end{figure}
+
+\subsection{Resolução}
+
+\subsubsection{Leitura do enunciado e hipóteses}
+
+\begin{itemize}
+  \item \passo{\enquote{Sistema sem perdas}:} todos os elementos são
+        reatâncias puras. A potência que sai de $G_1$ chega inteira a $G_2$.
+  \item \passo{\enquote{Operando em suas tensões nominais}:} $E_1 = E_2 =
+        1{,}0$~pu, pois, como se verá no Passo~1, as tensões base escolhidas
+        coincidem com as nominais dos geradores.
+  \item \passo{\enquote{Tensões dos geradores e abertura angular
+        inalteradas}:} $E_1$, $E_2$ e $\delta$ são os mesmos antes e depois
+        da perda da linha. Adota-se que são as tensões \emph{internas} das
+        máquinas, atrás das reatâncias $X_{G}$, que é a forma usual da
+        equação potência-ângulo. Por isso $X_{G}$ faz parte da reatância entre
+        as fontes. A outra leitura possível é discutida na
+        Seção~\ref{sec:q51-conferencias}.
+  \item \passo{\enquote{Uma das linhas é perdida}:} as duas linhas são
+        iguais, então tanto faz qual delas sai; a outra continua em operação.
+\end{itemize}
+
+\subsubsection{Estratégia}
+
+Aplicando a Equação~\eqref{eq:potencia-angulo} antes e depois da perda da
+linha:
+\[
+  P = \frac{E_1E_2}{X_{eq}}\sin\delta
+  \qquad\text{e}\qquad
+  P' = \frac{E_1E_2}{X_{eq}'}\sin\delta .
+\]
+Dividindo uma pela outra, $E_1$, $E_2$ e $\delta$ (que não mudam) se
+cancelam:
+\begin{equation}
+  \frac{P'}{P} = \frac{X_{eq}}{X_{eq}'}
+  \quad\Longrightarrow\quad
+  P' = P\,\frac{X_{eq}}{X_{eq}'} .
+  \label{eq:razao}
+\end{equation}
+Não é preciso conhecer os valores de $E_1$, $E_2$ e $\delta$, apenas as
+reatâncias equivalentes antes ($X_{eq}$) e depois ($X_{eq}'$), as duas na
+mesma base. O roteiro é:
+\begin{enumerate}[label=\arabic*.]
+  \item identificar as zonas e escolher as bases;
+  \item passar todas as reatâncias para pu na base comum;
+  \item montar o circuito equivalente e calcular $X_{eq}$;
+  \item repetir sem uma das linhas e calcular $X_{eq}'$;
+  \item aplicar a Equação~\eqref{eq:razao}.
+\end{enumerate}
+
+\subsubsection{Passo 1: zonas e bases}
+
+Os transformadores dividem o sistema em três zonas
+(Figura~\ref{fig:zonas}). A fronteira entre duas zonas passa \emph{por
+dentro} de cada transformador: cada enrolamento fica na zona da sua tensão
+nominal.
+
+\begin{figure}[H]
+  \centering
+  \zonasQcinquentaum
+  \caption{Zonas de tensão base da Questão 51. As fronteiras (tracejadas)
+    passam pelo meio dos transformadores.}
+  \label{fig:zonas}
+\end{figure}
+
+\passo{Potência base.} Escolhe-se $S_b = 100$~MVA, que é a potência nominal
+dos dois geradores. Ela vale para todo o sistema.
+
+\passo{Tensões base.} Escolhe-se a tensão base da zona~1 igual à tensão
+nominal de $G_1$, $V_{b1} = 20$~kV. As outras saem das relações de
+transformação:
+\begin{align*}
+  \text{zona 2 (atravessando $T_1$, $T_2$: 20/250 kV):}&\quad
+  V_{b2} = 20 \times \frac{250}{20} = 250~\text{kV},\\
+  \text{zona 3 (atravessando $T_3$, $T_4$: 250/25 kV):}&\quad
+  V_{b3} = 250 \times \frac{25}{250} = 25~\text{kV}.
+\end{align*}
+A tensão base da zona~3 coincide com a tensão nominal de $G_2$ (25~kV). Isso
+confirma que as relações dos transformadores são compatíveis entre si.
+
+\passo{Impedâncias e correntes base.} Pelas Equações~\eqref{eq:Zb}
+e~\eqref{eq:Ib}, com $S_b = 100$~MVA:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Zona & $V_b$ (kV) & $Z_b = V_b^2/S_b$ ($\Omega$) & $I_b = S_b/(\sqrt{3}\,V_b)$ (kA) \\
+    \midrule
+    1 ($G_1$)            & 20  & $20^2/100 = 4$       & $100/(\sqrt{3}\cdot 20) = 2{,}887$ \\
+    2 (linhas)           & 250 & $250^2/100 = 625$    & $100/(\sqrt{3}\cdot 250) = 0{,}231$ \\
+    3 ($G_2$)            & 25  & $25^2/100 = 6{,}25$  & $100/(\sqrt{3}\cdot 25) = 2{,}309$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Bases de cada zona ($S_b = 100$~MVA).}
+  \label{tab:bases}
+\end{table}
+
+Para esta questão só $Z_{b2} = 625~\Omega$ é necessário, porque é a única
+impedância dada em ohms (a das linhas). As correntes base ficam como
+referência.
+
+\subsubsection{Passo 2: reatâncias em pu na base comum}
+
+Aplica-se a Equação~\eqref{eq:mudanca-base} a cada equipamento. A
+\enquote{base velha} é a do próprio equipamento (seus dados de placa); a
+\enquote{base nova} é a do sistema ($S_b = 100$~MVA e a $V_b$ da zona
+onde ele está).
+
+\passo{Geradores.} $G_1$: $X = 0{,}10$~pu na base 100~MVA, 20~kV, na
+zona~1 ($V_b = 20$~kV):
+\[
+  X_{G1} = 0{,}10 \times \frac{100}{100} \times
+           \left(\frac{20}{20}\right)^{2} = 0{,}10~\text{pu}.
+\]
+$G_2$: $X = 0{,}10$~pu na base 100~MVA, 25~kV, na zona~3 ($V_b = 25$~kV):
+\[
+  X_{G2} = 0{,}10 \times \frac{100}{100} \times
+           \left(\frac{25}{25}\right)^{2} = 0{,}10~\text{pu}.
+\]
+Os geradores já estavam na base do sistema, e os valores não mudam.
+
+\passo{Transformadores.} $T_1$ e $T_2$: $X = 0{,}10$~pu na base 50~MVA,
+20/250~kV. Pelo lado de 20~kV (zona~1):
+\[
+  X_{T1} = X_{T2} = 0{,}10 \times \frac{100}{50} \times
+           \left(\frac{20}{20}\right)^{2} = 0{,}20~\text{pu}.
+\]
+Pelo lado de 250~kV (zona~2), o resultado é o mesmo, como garante a
+Equação~\eqref{eq:trafo-pu}:
+\[
+  0{,}10 \times \frac{100}{50} \times
+  \left(\frac{250}{250}\right)^{2} = 0{,}20~\text{pu}.
+\]
+$T_3$ e $T_4$: $X = 0{,}10$~pu na base 50~MVA, 25/250~kV. Pelo lado de
+25~kV (zona~3):
+\[
+  X_{T3} = X_{T4} = 0{,}10 \times \frac{100}{50} \times
+           \left(\frac{25}{25}\right)^{2} = 0{,}20~\text{pu}.
+\]
+Aqui só a potência muda de base: o transformador de 50~MVA visto numa base
+de 100~MVA tem reatância em pu duas vezes maior.
+
+\passo{Linhas.} A reatância de cada linha é dada em ohms, $X_L =
+125~\Omega$, na zona~2. Pela Equação~\eqref{eq:pu}:
+\[
+  X_{L1} = X_{L2} = \frac{125~\Omega}{Z_{b2}}
+                  = \frac{125}{625} = 0{,}20~\text{pu}.
+\]
+
+\passo{Conferência em ohms.} A reatância de $T_1$ vista do lado de 250~kV,
+em ohms, é $0{,}10 \times Z_{b,T}$, com $Z_{b,T} = 250^2/50 = 1250~\Omega$
+(base do próprio transformador), ou seja, $125~\Omega$. Em pu do sistema:
+$125/625 = 0{,}20$, o mesmo valor obtido acima. Coincidentemente, cada
+transformador tem, em ohms do lado de 250~kV, a mesma reatância de uma
+linha.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    Elemento & Cálculo & $X$ (pu, base 100 MVA) \\
+    \midrule
+    $G_1$, $G_2$       & $0{,}10 \times (100/100)$     & $0{,}10$ \\
+    $T_1$ a $T_4$      & $0{,}10 \times (100/50)$      & $0{,}20$ \\
+    $L_1$, $L_2$       & $125/625$                     & $0{,}20$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Reatâncias na base comum.}
+  \label{tab:reatancias}
+\end{table}
+
+\subsubsection{Passo 3: reatância equivalente antes da perda da linha}
+
+Com todas as reatâncias em pu, os transformadores ideais desaparecem e o
+sistema vira o circuito da Figura~\ref{fig:equiv-antes}.
+
+\begin{figure}[H]
+  \centering
+  \equivQcinquentaum{0}
+  \caption{Circuito equivalente em pu, com as duas linhas em operação.}
+  \label{fig:equiv-antes}
+\end{figure}
+
+Cada par em paralelo tem duas reatâncias iguais de $0{,}20$~pu. Pela
+Equação~\eqref{eq:paralelo}:
+\[
+  X_{T1}\parallel X_{T2}
+  = \frac{0{,}20 \times 0{,}20}{0{,}20 + 0{,}20}
+  = \frac{0{,}04}{0{,}40} = 0{,}10~\text{pu}.
+\]
+Da mesma forma, $X_{L1}\parallel X_{L2} = 0{,}10$~pu e $X_{T3}\parallel
+X_{T4} = 0{,}10$~pu. Os três pares estão em série entre si e com as
+reatâncias dos geradores. Pela Equação~\eqref{eq:serie}:
+\begin{equation}
+  X_{eq} = {\underbrace{0{,}10}_{G_1}}
+         + {\underbrace{0{,}10}_{T_1\parallel T_2}}
+         + {\underbrace{0{,}10}_{L_1\parallel L_2}}
+         + {\underbrace{0{,}10}_{T_3\parallel T_4}}
+         + {\underbrace{0{,}10}_{G_2}}
+         = 0{,}50~\text{pu}.
+  \label{eq:Xeq}
+\end{equation}
+
+\subsubsection{Passo 4: reatância equivalente depois da perda da linha}
+
+Com uma das linhas aberta (Figura~\ref{fig:equiv-depois}), o bloco das
+linhas deixa de ser um paralelo: resta uma única linha de $0{,}20$~pu. Os
+demais blocos não mudam.
+
+\begin{figure}[H]
+  \centering
+  \equivQcinquentaum{1}
+  \caption{Circuito equivalente em pu, com a linha 2 fora de operação.}
+  \label{fig:equiv-depois}
+\end{figure}
+
+\begin{equation}
+  X_{eq}' = 0{,}10 + 0{,}10 + {\underbrace{0{,}20}_{L_1}} + 0{,}10 + 0{,}10
+          = 0{,}60~\text{pu}.
+  \label{eq:Xeq-linha}
+\end{equation}
+
+\subsubsection{Passo 5: nova potência transmitida}
+
+Substituindo $P = 1{,}0$~pu e as Equações~\eqref{eq:Xeq}
+e~\eqref{eq:Xeq-linha} na Equação~\eqref{eq:razao}:
+\[
+  P' = P\,\frac{X_{eq}}{X_{eq}'}
+     = 1{,}0 \times \frac{0{,}50}{0{,}60}
+     = \frac{5}{6}
+     \approx 0{,}833~\text{pu}.
+\]
+Em unidades físicas, com $S_b = 100$~MVA, a potência transmitida cai de
+$1{,}0 \times 100 = 100$~MW para $0{,}833 \times 100 \approx 83{,}3$~MW.
+
+\begin{resposta}
+  \centering
+  $P' = \dfrac{5}{6} \approx 0{,}833$~p.u.\quad (cerca de 83,3~MW na base de
+  100~MVA)
+\end{resposta}
+
+\subsubsection{Conferências e interpretação}
+\label{sec:q51-conferencias}
+
+\passo{Conferência com os valores absolutos.} Com $E_1 = E_2 = 1{,}0$~pu, a
+abertura angular inicial sai da Equação~\eqref{eq:potencia-angulo}:
+\[
+  \sin\delta = \frac{P\,X_{eq}}{E_1E_2} = \frac{1{,}0 \times 0{,}50}{1{,}0
+  \times 1{,}0} = 0{,}5
+  \quad\Longrightarrow\quad
+  \delta = 30^\circ .
+\]
+Mantendo $\delta = 30^\circ$ com a nova reatância:
+\[
+  P' = \frac{1{,}0 \times 1{,}0}{0{,}60}\,\sin 30^\circ
+     = \frac{0{,}5}{0{,}6} \approx 0{,}833~\text{pu},
+\]
+o mesmo resultado do Passo~5.
+
+\passo{Leitura nas curvas potência-ângulo.} Antes, $P_{\max} =
+1/0{,}50 = 2{,}0$~pu; depois, $P_{\max}' = 1/0{,}60 \approx 1{,}667$~pu. A
+perda da linha \enquote{achata} a curva (Figura~\ref{fig:curvas-q51}). Com
+$\delta$ fixo em $30^\circ$, o ponto de operação desce da curva de antes
+($1{,}0$~pu) para a de depois ($0{,}833$~pu).
+
+\begin{figure}[H]
+  \centering
+  \curvasQcinquentaum
+  \caption{Curvas potência-ângulo antes e depois da perda da linha, com o
+    ponto de operação em $\delta = 30^\circ$.}
+  \label{fig:curvas-q51}
+\end{figure}
+
+\passo{Por que a potência não cai pela metade?} Perde-se metade das linhas,
+mas as linhas são só uma parte da reatância total. Antes, o paralelo das
+linhas contribuía com $0{,}10$ dos $0{,}50$~pu; depois, a linha restante
+contribui com $0{,}20$. A reatância total sobe de $0{,}50$ para $0{,}60$
+(20\,\%), e a potência cai na proporção inversa, para $5/6$ do valor inicial
+(uma queda de 16,7\,\%).
+
+\begin{observacao}[title=Observação: o que aconteceria na prática]
+  O enunciado fixa a abertura angular. Num sistema real, logo após a perda
+  da linha a potência mecânica das turbinas continua a mesma, e o rotor de
+  $G_1$ acelera até que $\delta$ aumente o bastante para a rede voltar a
+  transmitir $1{,}0$~pu. O novo regime teria $\sin\delta' = 1{,}0 \times
+  0{,}60 = 0{,}6$, ou seja, $\delta' \approx 36{,}9^\circ$, ainda abaixo de
+  $90^\circ$ e portanto estável. A questão pede outra coisa: com $\delta$
+  mantido, quanto vale a potência.
+\end{observacao}
+
+\passo{Outra leitura do enunciado.} Se as tensões mantidas fossem as dos
+\emph{terminais} dos geradores (barras de 20 e 25~kV), as reatâncias $X_{G}$
+ficariam fora do caminho entre as duas tensões:
+\[
+  X_{eq} = 0{,}10 + 0{,}10 + 0{,}10 = 0{,}30~\text{pu},
+  \qquad
+  X_{eq}' = 0{,}10 + 0{,}20 + 0{,}10 = 0{,}40~\text{pu},
+\]
+\[
+  P' = 1{,}0 \times \frac{0{,}30}{0{,}40} = 0{,}75~\text{pu}.
+\]
+Este texto adota a leitura com as tensões internas ($0{,}833$~pu), que é a
+usual quando se fala em abertura angular entre geradores.
+
+% =====================================================================
+\newpage
+\section{Questão 24 --- Fluxo de potência em três barras}
+% =====================================================================
+
+\subsection{Enunciado}
+
+Considere um sistema elétrico de potência representado pelo diagrama
+unifilar a seguir. A potência injetada na barra 3 e as impedâncias das
+linhas que conectam a barra 1 à barra 2 bem como a barra 2 à barra 3 são
+mensuradas por unidade (pu). Tanto a tensão na barra 1 quanto a tensão na
+barra 3 são iguais a 1,0~pu.
+
+\begin{center}
+  {\small\bfseries Diagrama unifilar do sistema}\\[0.5em]
+  \unifilarQvintequatro{0}
+\end{center}
+
+Com base nessas informações, é correto dizer que a tensão na barra 2 e o
+fluxo de potência saindo da barra 1 para a barra 2 são, respectivamente,
+\begin{enumerate}[label=(\Alph*)]
+  \item $1{,}0$ pu e $1{,}0$ pu.
+  \item $1{,}0-j0{,}1$ pu e $1{,}0$ pu.
+  \item $1{,}0+j0{,}1$ pu e $0{,}5$ pu.
+  \item $1{,}0-j0{,}1$ pu e $0{,}5$ pu.
+  \item $1{,}0+j0{,}1$ pu e $1{,}0$ pu.
+\end{enumerate}
+
+\subsection{Conteúdos envolvidos}
+
+A questão é um pequeno problema de \textbf{fluxo de potência}: dadas
+algumas tensões e potências, encontrar as que faltam. Ela usa:
+
+\begin{enumerate}
+  \item \passo{Sistema por unidade.} Tensões, impedâncias e potência já vêm
+        em pu, então as contas são feitas diretamente com esses números (a
+        revisão está na Questão~51).
+  \item \passo{Fasores e potência complexa.} É a relação entre a potência,
+        a tensão e a corrente numa barra, $S = V I^{*}$, que permite passar
+        da potência injetada para a corrente.
+  \item \passo{Fluxo numa linha.} A queda de tensão na reatância de cada
+        linha (lei de Ohm com fasores) e a potência que sai de uma barra para
+        a outra.
+\end{enumerate}
+
+\subsection{Revisão do conteúdo}
+
+\subsubsection{Fasores e potência complexa}
+
+Uma tensão senoidal $v(t) = \sqrt{2}\,|V|\cos(\omega t + \theta_V)$ é
+representada pelo fasor $V = |V|\angle\theta_V$, e uma corrente, da mesma
+forma, por $I = |I|\angle\theta_I$. A \emph{potência complexa} numa barra é
+\begin{equation}
+  S = V\,I^{*} = |V|\,|I|\angle(\theta_V - \theta_I) = P + jQ,
+  \label{eq:S}
+\end{equation}
+com
+\[
+  P = |V|\,|I|\cos\varphi, \qquad Q = |V|\,|I|\sin\varphi, \qquad
+  \varphi = \theta_V - \theta_I .
+\]
+O conjugado em $I^{*}$ aparece justamente para que o ângulo de $S$ seja a
+\emph{diferença} entre os ângulos da tensão e da corrente, isto é, o ângulo
+do fator de potência \cite{stevenson1986elementos}. Conhecidas a potência e
+a tensão, a corrente sai invertendo a Equação~\eqref{eq:S}:
+\begin{conceito}[title=Corrente a partir da potência]
+  \begin{equation}
+    S = V\,I^{*}
+    \quad\Longrightarrow\quad
+    I^{*} = \frac{S}{V}
+    \quad\Longrightarrow\quad
+    I = \left(\frac{S}{V}\right)^{\!*}
+    \label{eq:I-de-S}
+  \end{equation}
+\end{conceito}
+Em pu, a mesma relação vale para o sistema trifásico: o fator $\sqrt{3}$ de
+$S = \sqrt{3}\,V I$ é absorvido pelas bases (Equação~\eqref{eq:Ib}). Por
+convenção, $S$ é a potência \emph{injetada} na rede pela barra: positiva
+para um gerador e negativa para uma carga.
+
+\subsubsection{Fluxo de potência numa linha}
+
+Uma linha curta e sem perdas entre as barras $k$ e $m$ é representada só
+pela sua reatância série $x$ (Figura~\ref{fig:linhaKM})
+\cite{stevenson1986elementos,bichels2018sep,borges2005analise}.
+
+\begin{figure}[H]
+  \centering
+  \linhaKM
+  \caption{Linha entre as barras $k$ e $m$, só com reatância.}
+  \label{fig:linhaKM}
+\end{figure}
+
+A lei de Ohm na reatância dá a queda de tensão e, daí, a corrente:
+\begin{equation}
+  V_k - V_m = jx\,I_{km}
+  \quad\Longrightarrow\quad
+  I_{km} = \frac{V_k - V_m}{jx}.
+  \label{eq:Ikm}
+\end{equation}
+A potência que sai da barra $k$ em direção a $m$ é
+\begin{equation}
+  S_{km} = V_k\,I_{km}^{*}.
+  \label{eq:Skm}
+\end{equation}
+Substituindo a Equação~\eqref{eq:Ikm}, com $V_k = |V_k|\angle\theta_k$,
+$V_m = |V_m|\angle\theta_m$ e $\theta_{km} = \theta_k - \theta_m$:
+\[
+  S_{km} = V_k\,\frac{V_k^{*} - V_m^{*}}{-jx}
+         = \frac{j}{x}\bigl(|V_k|^{2} - V_k V_m^{*}\bigr),
+  \qquad
+  V_k V_m^{*} = |V_k|\,|V_m|\bigl(\cos\theta_{km} + j\sin\theta_{km}\bigr).
+\]
+Separando parte real e parte imaginária, como na dedução da equação
+potência-ângulo:
+\begin{conceito}[title=Fluxo numa linha sem perdas]
+  \begin{align}
+    P_{km} &= \frac{|V_k|\,|V_m|}{x}\,\sin\theta_{km}, \label{eq:Pkm}\\
+    Q_{km} &= \frac{|V_k|^{2} - |V_k|\,|V_m|\cos\theta_{km}}{x}. \label{eq:Qkm}
+  \end{align}
+\end{conceito}
+
+Propriedades úteis:
+\begin{itemize}
+  \item A Equação~\eqref{eq:Pkm} é a equação potência-ângulo da
+        Questão~51, com as tensões das barras no lugar das tensões internas.
+        A potência ativa vai da barra de \emph{maior ângulo} para a de menor.
+  \item Sem resistência não há perda ativa: $P_{mk} = -P_{km}$.
+  \item A linha consome potência reativa. Somando $Q_{km}$ e $Q_{mk}$:
+        \[
+          Q_{km} + Q_{mk}
+          = \frac{|V_k|^{2} + |V_m|^{2} - 2\,|V_k|\,|V_m|\cos\theta_{km}}{x}
+          = \frac{|V_k - V_m|^{2}}{x}
+          = |I_{km}|^{2}\,x ,
+        \]
+        em que a última igualdade vem de $|V_k - V_m| = x\,|I_{km}|$
+        (Equação~\eqref{eq:Ikm}).
+\end{itemize}
+
+\subsection{Resolução}
+
+\subsubsection{Leitura dos dados}
+
+\begin{itemize}
+  \item \passo{Tensões.} \enquote{Tanto a tensão na barra 1 quanto a tensão
+        na barra 3 são iguais a 1,0~pu} é lido como fasores iguais:
+        $V_1 = V_3 = 1{,}0\angle 0^\circ$~pu. A barra 3 pode ser tomada como
+        referência angular ($0^\circ$) sem perda de generalidade; que a
+        barra 1 também esteja em $0^\circ$ é uma interpretação, compatível
+        com as alternativas, que dão $V_2$ com parte real $1{,}0$.
+  \item \passo{Potência injetada.} O diagrama traz $S_{G3} = 0{,}5$, um
+        número real: a barra 3 injeta $S_{G3} = 0{,}5 + j0$~pu, só potência
+        ativa.
+  \item \passo{Linhas.} $x = 0{,}2$~pu em cada trecho (1--2 e 2--3).
+  \item \passo{Incógnitas.} A tensão $V_2$ e o fluxo $S_{12}$ da barra 1
+        para a barra 2. A carga da barra 2 \emph{não} é dada.
+\end{itemize}
+
+\begin{observacao}[title={Por que a leitura $V_1 = V_3 = 1\angle 0^\circ$ é necessária}]
+  Sem ela, o problema fica indeterminado. Se só os módulos $|V_1| = |V_3| =
+  1{,}0$ fossem conhecidos, faltariam o ângulo de $V_1$ e a carga da
+  barra~2, que não aparece no enunciado. Haveria infinitas soluções.
+\end{observacao}
+
+\subsubsection{Estratégia}
+
+A carga da barra 2 é desconhecida, mas na \emph{barra 3} conhecemos a
+tensão \emph{e} a potência. O caminho é:
+\begin{enumerate}[label=\arabic*.]
+  \item na barra 3, da potência e da tensão sai a corrente $I_{32}$
+        (Equação~\eqref{eq:I-de-S});
+  \item a queda na linha 3--2 dá $V_2$ (Equação~\eqref{eq:Ikm});
+  \item com $V_1$ e $V_2$, a corrente $I_{12}$ e o fluxo $S_{12}$
+        (Equações~\eqref{eq:Ikm} e~\eqref{eq:Skm}).
+\end{enumerate}
+
+\subsubsection{Passo 1: corrente injetada na barra 3}
+
+Da barra 3 sai uma única linha, a 3--2; portanto toda a corrente do
+gerador vai para ela: $I_{32} = I_3$. Pela Equação~\eqref{eq:I-de-S}:
+\[
+  I_{32} = \left(\frac{S_{G3}}{V_3}\right)^{\!*}
+         = \left(\frac{0{,}5 + j0}{1{,}0\angle 0^\circ}\right)^{\!*}
+         = (0{,}5)^{*}
+         = 0{,}5\angle 0^\circ~\text{pu}.
+\]
+Como a potência é puramente ativa e $V_3$ está em $0^\circ$, a corrente fica
+em fase com a tensão.
+
+\subsubsection{Passo 2: tensão na barra 2}
+
+Na linha 3--2, a Equação~\eqref{eq:Ikm} com $k = 3$ e $m = 2$ dá $V_3 - V_2
+= jx\,I_{32}$. Isolando $V_2$:
+\begin{align*}
+  V_2 &= V_3 - jx\,I_{32} \\
+      &= 1{,}0 - j0{,}2 \times 0{,}5 \\
+      &= 1{,}0 - j0{,}1~\text{pu}.
+\end{align*}
+Em módulo e ângulo:
+\[
+  |V_2| = \sqrt{1{,}0^{2} + 0{,}1^{2}} = \sqrt{1{,}01} \approx 1{,}005~\text{pu},
+  \qquad
+  \theta_2 = \arctan\!\left(\frac{-0{,}1}{1{,}0}\right) \approx -5{,}71^\circ,
+\]
+ou seja, $V_2 \approx 1{,}005\angle{-5{,}71^\circ}$~pu.
+
+\subsubsection{Passo 3: fluxo da barra 1 para a barra 2}
+
+Na linha 1--2, pela Equação~\eqref{eq:Ikm}:
+\[
+  I_{12} = \frac{V_1 - V_2}{jx}
+         = \frac{1{,}0 - (1{,}0 - j0{,}1)}{j0{,}2}
+         = \frac{j0{,}1}{j0{,}2}
+         = 0{,}5~\text{pu}.
+\]
+Pela Equação~\eqref{eq:Skm}:
+\[
+  S_{12} = V_1\,I_{12}^{*} = 1{,}0\angle 0^\circ \times 0{,}5
+         = 0{,}5 + j0~\text{pu}.
+\]
+Portanto $V_2 = 1{,}0 - j0{,}1$~pu e o fluxo da barra 1 para a barra 2 é
+$0{,}5$~pu (só potência ativa).
+
+\begin{resposta}
+  \centering
+  Alternativa \textbf{(D)}:\quad $V_2 = 1{,}0 - j0{,}1$~pu \quad e \quad
+  $S_{12} = 0{,}5$~pu
+\end{resposta}
+
+\subsubsection{Conferências}
+
+\passo{Pelas fórmulas em módulo e ângulo.} Com $\theta_{12} = \theta_1 -
+\theta_2 = 0 - (-5{,}71^\circ) = 5{,}71^\circ$, as
+Equações~\eqref{eq:Pkm} e~\eqref{eq:Qkm} dão:
+\[
+  P_{12} = \frac{1{,}0 \times 1{,}005}{0{,}2}\,\sin 5{,}71^\circ
+         = \frac{0{,}1}{0{,}2} = 0{,}5~\text{pu},
+\]
+\[
+  Q_{12} = \frac{1{,}0^{2} - 1{,}0 \times 1{,}005\cos 5{,}71^\circ}{0{,}2}
+         = \frac{1{,}0 - 1{,}0}{0{,}2} = 0 .
+\]
+As duas contas ficam exatas porque $|V_2|\sin 5{,}71^\circ =
+-\operatorname{Im}\{V_2\} = 0{,}1$ e $|V_2|\cos 5{,}71^\circ =
+\operatorname{Re}\{V_2\} = 1{,}0$.
+
+\passo{Balanço de potência na barra 2.} As correntes que saem da barra 2
+pelas linhas são $I_{21} = -I_{12} = -0{,}5$ e $I_{23} = -I_{32} = -0{,}5$.
+Pela Equação~\eqref{eq:Skm}:
+\[
+  S_{21} = V_2\,I_{21}^{*} = (1{,}0 - j0{,}1)(-0{,}5) = -0{,}5 + j0{,}05,
+  \qquad
+  S_{23} = -0{,}5 + j0{,}05 .
+\]
+A injeção total da barra 2 na rede é $S_{21} + S_{23} = -1{,}0 + j0{,}1$.
+Logo a carga da barra 2 absorve
+\[
+  S_c = -(S_{21} + S_{23}) = 1{,}0 - j0{,}1~\text{pu}.
+\]
+Ela consome $1{,}0$~pu de potência ativa e \emph{fornece} $0{,}1$~pu de
+reativo: comporta-se como uma carga capacitiva. O balanço fecha:
+\begin{itemize}
+  \item \emph{ativa}: $G_1$ e $G_3$ entregam $0{,}5$ cada; a carga consome
+        $1{,}0$; as linhas não têm perdas;
+  \item \emph{reativa}: cada linha consome $|I|^{2}x = 0{,}5^{2} \times
+        0{,}2 = 0{,}05$, ou $0{,}1$ no total. Os geradores não entregam
+        reativo ($Q_{12} = Q_{32} = 0$), então esses $0{,}1$ vêm da barra 2.
+        Na linha 1--2: $Q_{12} + Q_{21} = 0 + 0{,}05 = 0{,}05 = |I_{12}|^{2}x$.
+\end{itemize}
+
+\passo{Eliminação das alternativas.} Com $V_1 = 1\angle 0^\circ$ e $x =
+0{,}2$, o fluxo $S_{12}$ depende só de $V_2$:
+$S_{12} = V_1\bigl[(V_1 - V_2)/(jx)\bigr]^{*}$. Cada alternativa propõe um
+par ($V_2$, $S_{12}$), e basta verificar se ele é coerente:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}cccccc@{}}
+    \toprule
+    Alt. & $V_2$ proposto & $V_1 - V_2$ & $I_{12} = (V_1 - V_2)/(j0{,}2)$ &
+    $S_{12}$ calculado & $S_{12}$ proposto \\
+    \midrule
+    (A) & $1{,}0$          & $0$         & $0$        & $0$        & $1{,}0$ \ \ \nok \\
+    (B) & $1{,}0 - j0{,}1$ & $j0{,}1$    & $0{,}5$    & $0{,}5$    & $1{,}0$ \ \ \nok \\
+    (C) & $1{,}0 + j0{,}1$ & $-j0{,}1$   & $-0{,}5$   & $-0{,}5$   & $0{,}5$ \ \ \nok \\
+    (D) & $1{,}0 - j0{,}1$ & $j0{,}1$    & $0{,}5$    & $0{,}5$    & $0{,}5$ \ \ \ok \\
+    (E) & $1{,}0 + j0{,}1$ & $-j0{,}1$   & $-0{,}5$   & $-0{,}5$   & $1{,}0$ \ \ \nok \\
+    \bottomrule
+  \end{tabular}
+  \caption{Coerência entre $V_2$ e $S_{12}$ em cada alternativa.}
+  \label{tab:alternativas}
+\end{table}
+
+Só a alternativa (D) é coerente, e isso sem usar o valor de $S_{G3}$. O dado
+$S_{G3}$ confirma a escolha: com o $V_2$ de (D), $I_{32} = (V_3 -
+V_2)/(jx) = j0{,}1/j0{,}2 = 0{,}5$ e $S_{G3} = V_3\,I_{32}^{*} = 0{,}5$,
+exatamente o valor dado. Em (C) e (E), $V_2 = 1 + j0{,}1$ daria $I_{32} =
+-0{,}5$ e $S_{G3} = -0{,}5$: a barra 3 estaria \emph{absorvendo} potência,
+o oposto do enunciado.
+
+\passo{Diagrama fasorial.} A Figura~\ref{fig:fasorial} mostra as grandezas
+em escala. Como $I_{32}$ está em fase com $V_3$, a queda $jx\,I_{32}$ é
+perpendicular a $V_3$. Ela altera quase só o \emph{ângulo} de $V_2$
+($-5{,}71^\circ$); o módulo varia pouco, de $1{,}0$ para $1{,}005$.
+
+\begin{figure}[H]
+  \centering
+  \fasorialQvintequatro
+  \caption{Diagrama fasorial da Questão 24 (em escala).}
+  \label{fig:fasorial}
+\end{figure}
+
+\passo{Interpretação física.} O sistema é simétrico: $V_1 = V_3$ e as duas
+linhas são iguais. Então cada lado entrega metade da potência ativa da
+carga, $0{,}5$~pu, e a barra 2 fica atrasada em ângulo em relação às
+outras duas, pois a potência ativa vai do maior para o menor ângulo. A
+Figura~\ref{fig:q24-solucao} resume a solução.
+
+\begin{figure}[H]
+  \centering
+  \unifilarQvintequatro{1}
+  \caption{Tensões e fluxos da solução da Questão 24.}
+  \label{fig:q24-solucao}
+\end{figure}
+
+% =====================================================================
+\newpage
+\section{Questão 45 --- Potência ativa e reativa a partir da potência
+instantânea}
+% =====================================================================
+
+\subsection{Enunciado}
+
+Sejam $v(t) = \sqrt{2}\,V\sen(\omega t)$ e $i(t) = \sqrt{2}\,I\sen(\omega t
+- \theta)$, respectivamente, a tensão (volts) e a corrente (ampères)
+fornecidas por um gerador CA (Corrente Alternada) em regime permanente.
+
+A figura apresenta a curva de potência instantânea fornecida por este
+gerador durante o intervalo de tempo $\dfrac{2\pi}{\omega}$.
+
+\begin{center}
+  \graficoQquarentacinco[width=12cm,height=7.5cm,
+    tick label style={font=\footnotesize},label style={font=\small}]{0}
+\end{center}
+
+Denomina-se Potência Ativa $P$ o valor médio da potência instantânea ao
+longo do tempo e é dada por:\\
+$P = VI\cos\theta$.
+
+Denomina-se Potência Reativa $Q$ o valor calculado pela expressão $Q =
+VI\sen\theta$.
+
+Analisando a figura, qual o valor aproximado da Potência Reativa, em var?
+\begin{enumerate}[label=(\Alph*)]
+  \item 1\,000
+  \item 870
+  \item 500
+  \item 290
+  \item Impossível determinar com os dados fornecidos.
+\end{enumerate}
+
+\subsection{Conteúdos envolvidos}
+
+A questão dá apenas a curva da potência instantânea e as definições de $P$
+e $Q$, e pede $Q$. Ela envolve conceitos de \textbf{potência em circuitos de
+corrente alternada}:
+
+\begin{enumerate}
+  \item \passo{Potência instantânea.} O produto de uma tensão e uma corrente
+        senoidais de mesma frequência é uma senoide de frequência dupla
+        somada a um valor constante. Escrever $p(t)$ explicitamente mostra
+        quais características do gráfico correspondem a $P$ e a $VI$.
+  \item \passo{Potências ativa, reativa e aparente.} $P$, $Q$ e a potência
+        aparente $S = VI$ formam o triângulo de potências. A relação $S^2 =
+        P^2 + Q^2$ dá $Q$ a partir de $P$ e $S$.
+  \item \passo{Leitura de gráfico.} O valor médio e a amplitude de uma
+        senoide deslocada do zero saem do seu máximo e do seu mínimo.
+\end{enumerate}
+
+\subsection{Revisão do conteúdo}
+
+\subsubsection{Potência instantânea com tensão e corrente senoidais}
+
+A potência instantânea entregue pelo gerador é o produto da tensão pela
+corrente \cite{stevenson1986elementos}:
+\begin{equation}
+  p(t) = v(t)\,i(t) = 2VI\,\sen(\omega t)\,\sen(\omega t - \theta).
+  \label{eq:q45-p-produto}
+\end{equation}
+Para transformar o produto de senos numa soma, parte-se das fórmulas do
+cosseno da diferença e da soma:
+\[
+  \cos(a - b) = \cos a\cos b + \sen a\sen b,
+  \qquad
+  \cos(a + b) = \cos a\cos b - \sen a\sen b .
+\]
+Subtraindo a segunda da primeira, os termos $\cos a\cos b$ se cancelam:
+\begin{equation}
+  2\sen a\,\sen b = \cos(a - b) - \cos(a + b).
+  \label{eq:q45-identidade}
+\end{equation}
+Com $a = \omega t$ e $b = \omega t - \theta$, tem-se $a - b = \theta$ e $a +
+b = 2\omega t - \theta$. Substituindo na Equação~\eqref{eq:q45-p-produto}:
+\begin{conceito}[title=Potência instantânea]
+  \begin{equation}
+    p(t) = VI\cos\theta - VI\cos(2\omega t - \theta)
+    \label{eq:q45-p}
+  \end{equation}
+\end{conceito}
+
+\paragraph{Valor médio.} Ao longo de um período $T = 2\pi/\omega$ da tensão,
+o termo $\cos(2\omega t - \theta)$ completa exatamente dois ciclos, e sua
+integral é nula:
+\[
+  \int_0^T \cos(2\omega t - \theta)\,dt
+  = \left[\frac{\sen(2\omega t - \theta)}{2\omega}\right]_0^T
+  = \frac{\sen(4\pi - \theta) - \sen(-\theta)}{2\omega}
+  = \frac{-\sen\theta + \sen\theta}{2\omega} = 0 .
+\]
+Logo o valor médio de $p(t)$ é só o termo constante:
+\[
+  \frac{1}{T}\int_0^T p(t)\,dt = VI\cos\theta - 0 = VI\cos\theta = P,
+\]
+exatamente a definição de potência ativa dada no enunciado.
+
+\paragraph{Amplitude, máximo e mínimo.} O termo oscilante tem amplitude
+$VI$, que é a \emph{potência aparente} $S = VI$. Como o cosseno varia entre
+$-1$ e $+1$:
+\begin{equation}
+  p_{\max} = VI\cos\theta + VI = P + S,
+  \qquad
+  p_{\min} = VI\cos\theta - VI = P - S .
+  \label{eq:q45-max-min}
+\end{equation}
+Sempre que $\theta \neq 0$, tem-se $P < S$ e portanto $p_{\min} < 0$: em
+parte do ciclo a potência instantânea é \emph{negativa}, isto é, a energia
+volta da carga para o gerador.
+
+\paragraph{Decomposição em parcela ativa e parcela reativa.} Expandindo o
+cosseno da diferença,
+\[
+  \cos(2\omega t - \theta) = \cos 2\omega t\,\cos\theta
+                           + \sen 2\omega t\,\sen\theta ,
+\]
+e substituindo na Equação~\eqref{eq:q45-p}:
+\begin{equation}
+  p(t) = VI\cos\theta\,(1 - \cos 2\omega t) - VI\sen\theta\,\sen 2\omega t
+       = P\,(1 - \cos 2\omega t) - Q\,\sen 2\omega t .
+  \label{eq:q45-decomposicao}
+\end{equation}
+\begin{itemize}
+  \item A primeira parcela nunca é negativa: varia entre $0$ e $2P$ e tem
+        média $P$. É a energia que vai do gerador para a carga e é
+        consumida.
+  \item A segunda parcela tem média nula e amplitude $Q$. É a energia que
+        vai e volta a cada meio ciclo, armazenada e devolvida pelos campos
+        magnéticos (indutores) e elétricos (capacitores). Ela não realiza
+        trabalho líquido, mas circula pela rede. Esse é o significado físico
+        da potência reativa.
+\end{itemize}
+
+\subsubsection{Potências ativa, reativa e aparente}
+
+As três potências e suas unidades são:
+\[
+  S = VI~\text{(VA)}, \qquad
+  P = S\cos\theta~\text{(W)}, \qquad
+  Q = S\sen\theta~\text{(var)}.
+\]
+Elevando $P$ e $Q$ ao quadrado e somando, com $\cos^2\theta + \sen^2\theta =
+1$:
+\begin{conceito}[title=Triângulo de potências]
+  \begin{equation}
+    P^2 + Q^2 = S^2\left(\cos^2\theta + \sen^2\theta\right) = S^2
+    \quad\Longrightarrow\quad
+    Q = \pm\sqrt{S^2 - P^2}
+    \label{eq:q45-triangulo}
+  \end{equation}
+\end{conceito}
+$P$, $Q$ e $S$ são os lados de um triângulo retângulo
+(Figura~\ref{fig:q45-triangulo}), e $\cos\theta = P/S$ é o \emph{fator de
+potência}.
+
+\begin{figure}[H]
+  \centering
+  \trianguloPotencias
+  \caption{Triângulo de potências.}
+  \label{fig:q45-triangulo}
+\end{figure}
+
+\paragraph{Sinal de $Q$.} Em $i(t) = \sqrt{2}\,I\sen(\omega t - \theta)$, o
+ângulo $\theta$ é o atraso da corrente em relação à tensão. Com $\theta > 0$
+a corrente está atrasada: a carga é indutiva e $Q > 0$. Com $\theta < 0$ a
+corrente está adiantada: a carga é capacitiva e $Q < 0$. Por isso a raiz da
+Equação~\eqref{eq:q45-triangulo} dá só o módulo de $Q$, e o sinal precisa
+vir de outra informação.
+
+\paragraph{Ligação com fasores.} Com $V = V\angle 0^\circ$ e $I =
+I\angle{-\theta}$, a potência complexa da Equação~\eqref{eq:S} (Questão 24)
+fica
+\[
+  V\,I^{*} = VI\angle\theta = VI\cos\theta + j\,VI\sen\theta = P + jQ :
+\]
+$P$ e $Q$ são as partes real e imaginária da potência complexa, e $S = VI$
+é o seu módulo.
+
+\subsubsection{Média e amplitude de uma senoide deslocada}
+
+Uma curva da forma $y(t) = A - B\cos(\cdot)$, com $B > 0$, oscila entre
+$y_{\max} = A + B$ e $y_{\min} = A - B$. Somando e subtraindo essas duas
+relações:
+\begin{equation}
+  A = \frac{y_{\max} + y_{\min}}{2}, \qquad B = \frac{y_{\max} - y_{\min}}{2}.
+  \label{eq:q45-media-amplitude}
+\end{equation}
+O valor médio ($A$) fica no meio entre o máximo e o mínimo, e a amplitude
+($B$) é metade da distância entre eles.
+
+\subsection{Resolução}
+
+\subsubsection{Leitura do enunciado e do gráfico}
+
+\begin{itemize}
+  \item \passo{Intervalo de tempo.} O gráfico vai de $0$ a $0{,}02$~s, que
+        é o intervalo $2\pi/\omega$ (um período da tensão). Então $\omega =
+        2\pi/0{,}02 = 100\pi \approx 314$~rad/s, ou $f = 50$~Hz. Nesse
+        intervalo, $p(t)$ completa \emph{dois} ciclos (dois máximos e dois
+        mínimos), como esperado para uma oscilação em $2\omega$.
+  \item \passo{Valores extremos.} Os picos ficam entre as linhas de 1400 e
+        1600, e os vales entre $-400$ e $-600$:
+        $p_{\max} \approx 1500$~W e $p_{\min} \approx -500$~W. A questão
+        pede um valor \enquote{aproximado}, então essa precisão de leitura
+        basta.
+  \item \passo{O que não é dado.} $V$, $I$ e $\theta$ não aparecem
+        separadamente; só a curva.
+\end{itemize}
+
+\subsubsection{Estratégia}
+
+Comparando a Equação~\eqref{eq:q45-p}, $p(t) = P - S\cos(2\omega t -
+\theta)$, com $y = A - B\cos(\cdot)$, o valor médio é $A = P$ e a amplitude
+é $B = S$. A Equação~\eqref{eq:q45-media-amplitude} dá $P$ e $S$ diretamente
+do máximo e do mínimo lidos no gráfico. Depois, $\cos\theta = P/S$ dá
+$\theta$, e $Q = S\sen\theta$. Também é possível usar diretamente $Q =
+\sqrt{S^2 - P^2}$, conferindo o sinal pela forma da curva.
+
+\subsubsection{Passo 1: potência ativa}
+
+\[
+  P = \frac{p_{\max} + p_{\min}}{2}
+    = \frac{1500 + (-500)}{2}
+    = \frac{1000}{2} = 500~\text{W}.
+\]
+
+\subsubsection{Passo 2: potência aparente}
+
+\[
+  S = VI = \frac{p_{\max} - p_{\min}}{2}
+    = \frac{1500 - (-500)}{2}
+    = \frac{2000}{2} = 1000~\text{VA}.
+\]
+
+\subsubsection{Passo 3: ângulo e potência reativa}
+
+O fator de potência e o ângulo:
+\[
+  \cos\theta = \frac{P}{S} = \frac{500}{1000} = 0{,}5
+  \quad\Longrightarrow\quad
+  \theta = \arccos 0{,}5 = 60^\circ ,
+\]
+com $\theta$ positivo, como se confere adiante. A potência reativa:
+\[
+  Q = S\sen\theta = 1000 \times \sen 60^\circ
+    = 1000 \times \frac{\sqrt{3}}{2}
+    = 500\sqrt{3} \approx 866~\text{var}.
+\]
+Pelo triângulo de potências (Equação~\eqref{eq:q45-triangulo}), o mesmo
+valor:
+\[
+  Q = \sqrt{S^2 - P^2} = \sqrt{1000^2 - 500^2}
+    = \sqrt{1\,000\,000 - 250\,000} = \sqrt{750\,000} \approx 866~\text{var}.
+\]
+O valor mais próximo entre as alternativas é 870~var.
+
+\begin{resposta}
+  \centering
+  Alternativa \textbf{(B)}:\quad $Q = 500\sqrt{3} \approx 866$~var $\approx
+  870$~var
+\end{resposta}
+
+\subsubsection{Conferências}
+
+\passo{Sinal de $\theta$.} Pela Equação~\eqref{eq:q45-p}, $p(0) = VI\cos\theta
+- VI\cos(-\theta) = 0$, como no gráfico. A derivada em $t = 0$ é
+\[
+  p'(0) = 2\omega VI\sen(2\omega\cdot 0 - \theta) = -2\omega VI\sen\theta .
+\]
+No gráfico a curva sai de zero \emph{descendo}, ou seja, $p'(0) < 0$, e
+portanto $\sen\theta > 0$. Então $\theta = +60^\circ$ (não $-60^\circ$): a
+corrente está atrasada, a carga é indutiva e $Q = +866$~var.
+
+\passo{Reconstrução da curva.} Com $P = 500$~W, $S = 1000$~VA, $\theta =
+60^\circ$ e $\omega = 100\pi$~rad/s (ou seja, $2\omega t = 36\,000\,t$ em
+graus), a Equação~\eqref{eq:q45-p} fica
+\[
+  p(t) = 500 - 1000\cos\bigl(2\omega t - 60^\circ\bigr).
+\]
+Os pontos notáveis batem com o gráfico:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}cccc@{}}
+    \toprule
+    $t$ (s) & $2\omega t - 60^\circ$ & $p(t)$ (W) & No gráfico \\
+    \midrule
+    $0$                        & $-60^\circ$  & $500 - 500 = 0$       & começa em zero \\
+    $1/600 \approx 0{,}0017$   & $0^\circ$    & $500 - 1000 = -500$   & primeiro mínimo \\
+    $1/300 \approx 0{,}0033$   & $60^\circ$   & $500 - 500 = 0$       & cruza o zero subindo \\
+    $1/150 \approx 0{,}0067$   & $180^\circ$  & $500 + 1000 = 1500$   & primeiro máximo \\
+    $1/100 = 0{,}01$           & $300^\circ$  & $500 - 500 = 0$       & cruza o zero descendo \\
+    $7/600 \approx 0{,}0117$   & $360^\circ$  & $500 - 1000 = -500$   & segundo mínimo \\
+    \bottomrule
+  \end{tabular}
+  \caption{Pontos notáveis de $p(t) = 500 - 1000\cos(2\omega t - 60^\circ)$.}
+  \label{tab:q45-pontos}
+\end{table}
+
+\passo{Decomposição.} Pela Equação~\eqref{eq:q45-decomposicao}, $p(t) =
+500\,(1 - \cos 2\omega t) - 866\,\sen 2\omega t$. A
+Figura~\ref{fig:q45-decomposicao} mostra que a soma das duas parcelas
+reproduz a curva do enunciado. A parcela ativa oscila entre 0 e 1000~W, com
+média 500~W; a parcela reativa oscila entre $-866$ e $+866$~W, com média nula.
+
+\begin{figure}[H]
+  \centering
+  \decomposicaoQquarentacinco
+  \caption{A curva $p(t)$ do enunciado e as suas parcelas ativa e reativa.}
+  \label{fig:q45-decomposicao}
+\end{figure}
+
+\passo{Por que as outras alternativas estão erradas.}
+\begin{itemize}
+  \item (A) 1\,000 é a potência aparente $S = VI$, não a reativa.
+  \item (C) 500 é a potência ativa $P$ (o valor médio da curva).
+  \item (D) 290 seria obtido com o ângulo errado, por exemplo $Q =
+        P\,\mathrm{tg}\,30^\circ \approx 289$.
+  \item (E) É verdade que o gráfico não permite achar $V$ e $I$
+        separadamente: qualquer par com $VI = 1000$ produz a mesma curva.
+        Mas $P$ e $Q$ dependem só do produto $VI$ e do ângulo $\theta$, e os
+        dois saem do gráfico. Os dados são suficientes.
+\end{itemize}
+
+\begin{observacao}[title=Interpretação física]
+  Nos intervalos em que a curva fica abaixo de zero ($0 < t < 1/300$~s e
+  $0{,}01 < t < 0{,}0133$~s), a potência instantânea é negativa: o gerador
+  recebe energia de volta da carga. É a energia que estava armazenada no
+  campo magnético da carga indutiva ($\theta > 0$) sendo devolvida. A
+  potência reativa, $Q \approx 866$~var, mede a amplitude dessa troca. O
+  fator de potência $\cos\theta = 0{,}5$ é baixo: para entregar 500~W, o
+  gerador precisa fornecer 1000~VA.
+\end{observacao}
+
+% =====================================================================
+\newpage
+\section*{Resumo das respostas}
+\addcontentsline{toc}{section}{Resumo das respostas}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{7.6cm}@{}}
+    \toprule
+    Questão & Resposta & Ideia central \\
+    \midrule
+    51 & $P' = 5/6 \approx 0{,}833$~p.u. &
+      $P \propto 1/X_{eq}$; $X_{eq}$ vai de $0{,}5$ para $0{,}6$~pu \\
+    24 & Alternativa (D) &
+      $I_{32} = (S_{G3}/V_3)^{*}$ $\Rightarrow$ $V_2$ $\Rightarrow$
+      $I_{12}$ $\Rightarrow$ $S_{12}$ \\
+    45 & Alternativa (B) &
+      média $= P = 500$~W, amplitude $= S = 1000$~VA
+      $\Rightarrow$ $Q = \sqrt{S^2 - P^2} \approx 866$~var \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\printbibliography[heading=bibintoc,title={Referências}]
+
+\end{document}

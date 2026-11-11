@@ -102,7 +102,7 @@
 // ---------------------------------------------------------------------
 #let unifilar-51() = {
   set text(size: 12pt)
-  cetz.canvas(length: 1.2cm, {
+  cetz.canvas(length: 1.05cm, {
     import cetz.draw: *
     // geradores
     line((0.36, 2), (1.2, 2), stroke: fio)
@@ -254,33 +254,31 @@
 
 == Questão 51 --- Enunciado
 
-#align(center, unifilar-51())
-
 #grid(
-  columns: (1fr, 1fr),
-  gutter: 2em,
-  {
-    set text(size: 14pt)
-    table(
-      columns: 2,
-      stroke: none,
-      inset: (x: 5pt, y: 4pt),
-      table.hline(stroke: 0.9pt),
-      [$G_1$], [100 MVA, 20 kV, $X = 10%$],
-      [$G_2$], [100 MVA, 25 kV, $X = 10%$],
-      [$T_1$, $T_2$], [50 MVA, 20/250 kV, $X = 10%$],
-      [$T_3$, $T_4$], [50 MVA, 25/250 kV, $X = 10%$],
-      table.hline(stroke: 0.9pt),
-    )
-  },
-  text(size: 14pt)[
-    Sistema sem perdas, $P_12 = 1,0$ pu com tensões nominais.
-    Uma linha é perdida; tensões dos geradores e abertura angular
-    #alert[inalteradas].
-
-    *Nova potência ativa transmitida, em pu?*
+  columns: (1.15fr, 1fr),
+  gutter: 1.5em,
+  align: horizon,
+  align(center, unifilar-51()),
+  text(size: 13pt)[
+    Dados dos componentes: \
+    Gerador $G_1$: 100 MVA, 20 kV, $X = 10%$ \
+    Gerador $G_2$: 100 MVA, 25 kV, $X = 10%$ \
+    Transformadores $T_1$ e $T_2$: \
+    #h(1em) 50 MVA, 20 kV/250 kV, $X = 10%$ \
+    Transformadores $T_3$ e $T_4$: \
+    #h(1em) 50 MVA, 25 kV/250 kV, $X = 10%$
   ],
 )
+
+#text(size: 14pt)[
+  A figura acima apresenta um sistema de potência sem perdas. Suponha que,
+  inicialmente, a potência ativa transmitida do gerador $G_1$ para o $G_2$
+  seja igual a 1,0 p.u., e que os dois estejam operando em suas tensões
+  nominais. Em um dado instante, uma das linhas de transmissão é perdida.
+  Supondo que as tensões dos geradores e a abertura angular permaneçam
+  inalteradas, qual será a nova potência ativa transmitida, em p.u., nessa
+  condição de regime?
+]
 
 == Questão 51 --- Estratégia
 
@@ -374,26 +372,36 @@ no caminho), seria $0,3 \/ 0,4 = 0,75$ pu.]
 
 == Questão 24 --- Enunciado
 
-#align(center, unifilar-24(false))
+#text(size: 14pt)[
+  Considere um sistema elétrico de potência representado pelo diagrama
+  unifilar a seguir. A potência injetada na barra 3 e as impedâncias das
+  linhas que conectam a barra 1 à barra 2 bem como a barra 2 à barra 3 são
+  mensuradas por unidade (pu). Tanto a tensão na barra 1 quanto a tensão na
+  barra 3 são iguais a 1,0 pu.
+]
 
 #grid(
-  columns: (1fr, 0.85fr),
-  gutter: 2em,
-  text(size: 15pt)[
-    Potência injetada na barra 3 e impedâncias em pu.
-    Tensões nas barras 1 e 3 iguais a $1,0$ pu.
+  columns: (1.1fr, 1fr),
+  gutter: 1.5em,
+  align: horizon,
+  align(center)[
+    #text(size: 12pt, weight: "bold")[Diagrama unifilar do sistema]
 
-    *Tensão na barra 2 e fluxo de potência saindo da barra 1 para a barra 2?*
+    #unifilar-24(false)
   ],
   {
-    set text(size: 15pt)
+    set text(size: 14pt)
     set enum(numbering: "(A)")
     [
-      + $1,0$ pu e $1,0$ pu
-      + $1,0 - j 0,1$ pu e $1,0$ pu
-      + $1,0 + j 0,1$ pu e $0,5$ pu
-      + $1,0 - j 0,1$ pu e $0,5$ pu
-      + $1,0 + j 0,1$ pu e $1,0$ pu
+      Com base nessas informações, é correto dizer que a tensão na barra 2 e
+      o fluxo de potência saindo da barra 1 para a barra 2 são,
+      respectivamente,
+
+      + $1,0$ pu e $1,0$ pu.
+      + $1,0 - j 0,1$ pu e $1,0$ pu.
+      + $1,0 + j 0,1$ pu e $0,5$ pu.
+      + $1,0 - j 0,1$ pu e $0,5$ pu.
+      + $1,0 + j 0,1$ pu e $1,0$ pu.
     ]
   },
 )

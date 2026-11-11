@@ -10,11 +10,62 @@ format:
     transition: fade
 ---
 
-## Enunciado
+## Enunciado {.smaller}
 
-Potência injetada na barra 3 e impedâncias em pu. Tensões nas barras 1 e 3
-iguais a $1{,}0$ pu. Qual a tensão na barra 2 e o fluxo de potência
-saindo da barra 1 para a barra 2?
+Considere um sistema elétrico de potência representado pelo diagrama
+unifilar a seguir. A potência injetada na barra 3 e as impedâncias das
+linhas que conectam a barra 1 à barra 2 bem como a barra 2 à barra 3 são
+mensuradas por unidade (pu). Tanto a tensão na barra 1 quanto a tensão na
+barra 3 são iguais a 1,0 pu.
+
+```{=html}
+<div style="text-align:center">
+<p style="font-weight:bold; margin-bottom:0">Diagrama unifilar do sistema</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" width="680" height="240" font-family="Fira Sans, Helvetica, Arial, sans-serif">
+<defs>
+  <marker id="fx-seta-enun" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9z" fill="#22262B"/>
+  </marker>
+</defs>
+<!-- geradores -->
+<circle cx="70" cy="130" r="22" fill="white" stroke="#22262B" stroke-width="1.5"/>
+<path d="M58 130 Q64 119 70 130 T82 130" fill="none" stroke="#22262B" stroke-width="1.5"/>
+<circle cx="610" cy="130" r="22" fill="white" stroke="#22262B" stroke-width="1.5"/>
+<path d="M598 130 Q604 119 610 130 T622 130" fill="none" stroke="#22262B" stroke-width="1.5"/>
+<line x1="92" y1="130" x2="140" y2="130" stroke="#22262B" stroke-width="1.5"/>
+<line x1="540" y1="130" x2="588" y2="130" stroke="#22262B" stroke-width="1.5"/>
+<!-- linhas e carga -->
+<line x1="140" y1="130" x2="540" y2="130" stroke="#22262B" stroke-width="1.5"/>
+<path d="M340 152 H360 V212" fill="none" stroke="#22262B" stroke-width="1.5" marker-end="url(#fx-seta-enun)"/>
+<!-- barras -->
+<line x1="140" y1="95" x2="140" y2="165" stroke="#22262B" stroke-width="6"/>
+<line x1="340" y1="95" x2="340" y2="165" stroke="#22262B" stroke-width="6"/>
+<line x1="540" y1="95" x2="540" y2="165" stroke="#22262B" stroke-width="6"/>
+<!-- rótulos -->
+<text x="140" y="82" text-anchor="middle" font-size="15" fill="#22262B">Barra 1</text>
+<text x="340" y="82" text-anchor="middle" font-size="15" fill="#22262B">Barra 2</text>
+<text x="540" y="82" text-anchor="middle" font-size="15" fill="#22262B">Barra 3</text>
+<text x="240" y="119" text-anchor="middle" font-size="14" fill="#7A828C">j0,2</text>
+<text x="440" y="119" text-anchor="middle" font-size="14" fill="#7A828C">j0,2</text>
+<text x="70" y="174" text-anchor="middle" font-size="15" fill="#22262B">G1</text>
+<text x="610" y="174" text-anchor="middle" font-size="15" fill="#22262B">G3</text>
+<text x="610" y="200" text-anchor="middle" font-size="15" fill="#22262B">S<tspan font-size="11" dy="4">G3</tspan><tspan dy="-4"> = 0,5</tspan></text>
+</svg>
+</div>
+```
+
+## Enunciado (continuação) {.smaller}
+
+Com base nessas informações, é correto dizer que a tensão na barra 2 e o
+fluxo de potência saindo da barra 1 para a barra 2 são, respectivamente,
+
+| (A) $1{,}0$ pu e $1{,}0$ pu.
+| (B) $1{,}0 - j0{,}1$ pu e $1{,}0$ pu.
+| (C) $1{,}0 + j0{,}1$ pu e $0{,}5$ pu.
+| (D) $1{,}0 - j0{,}1$ pu e $0{,}5$ pu.
+| (E) $1{,}0 + j0{,}1$ pu e $1{,}0$ pu.
+
+## Leitura dos dados
 
 - $V_1 = V_3 = 1{,}0\angle 0^\circ$ pu
 - $S_{G3} = 0{,}5 + j0$ pu

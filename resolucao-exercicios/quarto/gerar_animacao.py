@@ -42,39 +42,24 @@ def sub(base, idx, size=15):
             f'<tspan dy="-4">')
 
 
-def svg(flow, load, step1="", step2="", step3="", inline_style=True):
-    """Desenho do unifilar. stepN = atributos que controlam a etapa de cada fluxo."""
+def svg(flow, load, step1="", step2="", step3="", inline_style=True, *,
+        enunciado=False, largura=680):
+    """Desenho do unifilar. stepN = atributos que controlam a etapa de cada fluxo.
+
+    enunciado=True -> só o diagrama do enunciado: sem os fluxos animados e com
+    S_G3 = 0,5 junto ao gerador 3, como na questão original (id do marcador
+    próprio, para não repetir o id do desenho animado na mesma página).
+    largura = largura exibida em px (a altura acompanha a proporção 680x240).
+    """
     style = f"<style>\n{css(flow)}\n</style>\n" if inline_style else ""
+    seta = "fx-seta-enun" if enunciado else "fx-seta"
+    altura = round(largura * 240 / 680)
     t = f'font-size="15" fill="{INK}"'
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" width="680" height="240" font-family="Fira Sans, Helvetica, Arial, sans-serif">
-{style}<defs>
-  <marker id="fx-seta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-    <path d="M1 1L9 5L1 9z" fill="{INK}"/>
-  </marker>
-</defs>
-<!-- geradores -->
-<circle cx="70" cy="130" r="22" fill="white" stroke="{INK}" stroke-width="1.5"/>
-<path d="M58 130 Q64 119 70 130 T82 130" fill="none" stroke="{INK}" stroke-width="1.5"/>
-<circle cx="610" cy="130" r="22" fill="white" stroke="{INK}" stroke-width="1.5"/>
-<path d="M598 130 Q604 119 610 130 T622 130" fill="none" stroke="{INK}" stroke-width="1.5"/>
-<line x1="92" y1="130" x2="140" y2="130" stroke="{INK}" stroke-width="1.5"/>
-<line x1="540" y1="130" x2="588" y2="130" stroke="{INK}" stroke-width="1.5"/>
-<!-- linhas e carga -->
-<line x1="140" y1="130" x2="540" y2="130" stroke="{INK}" stroke-width="1.5"/>
-<path d="M340 152 H360 V212" fill="none" stroke="{INK}" stroke-width="1.5" marker-end="url(#fx-seta)"/>
-<!-- barras -->
-<line x1="140" y1="95" x2="140" y2="165" stroke="{INK}" stroke-width="6"/>
-<line x1="340" y1="95" x2="340" y2="165" stroke="{INK}" stroke-width="6"/>
-<line x1="540" y1="95" x2="540" y2="165" stroke="{INK}" stroke-width="6"/>
-<!-- rótulos -->
-<text x="140" y="82" text-anchor="middle" {t}>Barra 1</text>
-<text x="340" y="82" text-anchor="middle" {t}>Barra 2</text>
-<text x="540" y="82" text-anchor="middle" {t}>Barra 3</text>
-<text x="240" y="119" text-anchor="middle" font-size="14" fill="{MUTE}">j0,2</text>
-<text x="440" y="119" text-anchor="middle" font-size="14" fill="{MUTE}">j0,2</text>
-<text x="70" y="174" text-anchor="middle" {t}>G1</text>
-<text x="610" y="174" text-anchor="middle" {t}>G3</text>
-<!-- etapa 1: fluxo da barra 1 para a 2 -->
+    if enunciado:
+        final = (f'<text x="610" y="200" text-anchor="middle" {t}>'
+                 f'{sub("S", "G3")} = 0,5</tspan></text>\n')
+    else:
+        final = f"""<!-- etapa 1: fluxo da barra 1 para a 2 -->
 <g id="fx-12" {step1}>
   <path class="fx-flow" d="M146 130 H334"/>
   <text x="240" y="157" text-anchor="middle" font-size="15" fill="{flow}">{sub("S", "12")} = 0,5 pu</tspan></text>
@@ -89,10 +74,40 @@ def svg(flow, load, step1="", step2="", step3="", inline_style=True):
   <path class="fx-flow fx-rapido" d="M346 152 H360 V204"/>
   <text x="374" y="198" font-size="15" fill="{load}">carga: 1,0 &#8722; j0,1 pu</text>
 </g>
-</svg>"""
+"""
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" width="{largura}" height="{altura}" font-family="Fira Sans, Helvetica, Arial, sans-serif">
+{style}<defs>
+  <marker id="{seta}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9z" fill="{INK}"/>
+  </marker>
+</defs>
+<!-- geradores -->
+<circle cx="70" cy="130" r="22" fill="white" stroke="{INK}" stroke-width="1.5"/>
+<path d="M58 130 Q64 119 70 130 T82 130" fill="none" stroke="{INK}" stroke-width="1.5"/>
+<circle cx="610" cy="130" r="22" fill="white" stroke="{INK}" stroke-width="1.5"/>
+<path d="M598 130 Q604 119 610 130 T622 130" fill="none" stroke="{INK}" stroke-width="1.5"/>
+<line x1="92" y1="130" x2="140" y2="130" stroke="{INK}" stroke-width="1.5"/>
+<line x1="540" y1="130" x2="588" y2="130" stroke="{INK}" stroke-width="1.5"/>
+<!-- linhas e carga -->
+<line x1="140" y1="130" x2="540" y2="130" stroke="{INK}" stroke-width="1.5"/>
+<path d="M340 152 H360 V212" fill="none" stroke="{INK}" stroke-width="1.5" marker-end="url(#{seta})"/>
+<!-- barras -->
+<line x1="140" y1="95" x2="140" y2="165" stroke="{INK}" stroke-width="6"/>
+<line x1="340" y1="95" x2="340" y2="165" stroke="{INK}" stroke-width="6"/>
+<line x1="540" y1="95" x2="540" y2="165" stroke="{INK}" stroke-width="6"/>
+<!-- rótulos -->
+<text x="140" y="82" text-anchor="middle" {t}>Barra 1</text>
+<text x="340" y="82" text-anchor="middle" {t}>Barra 2</text>
+<text x="540" y="82" text-anchor="middle" {t}>Barra 3</text>
+<text x="240" y="119" text-anchor="middle" font-size="14" fill="{MUTE}">j0,2</text>
+<text x="440" y="119" text-anchor="middle" font-size="14" fill="{MUTE}">j0,2</text>
+<text x="70" y="174" text-anchor="middle" {t}>G1</text>
+<text x="610" y="174" text-anchor="middle" {t}>G3</text>
+{final}</svg>"""
 
 
-def qmd_source(svg_quarto, *, theme_lines, logo_line, highlight_open, highlight_close):
+def qmd_source(svg_quarto, svg_enunciado, *, theme_lines, logo_line, highlight_open,
+               highlight_close):
     return f"""---
 title: "Questão 24 — Fluxo de potência em três barras"
 subtitle: "Sistemas Elétricos de Potência"
@@ -105,11 +120,33 @@ format:
     transition: fade
 {logo_line}---
 
-## Enunciado
+## Enunciado {{.smaller}}
 
-Potência injetada na barra 3 e impedâncias em pu. Tensões nas barras 1 e 3
-iguais a $1{{,}}0$ pu. Qual a tensão na barra 2 e o fluxo de potência
-saindo da barra 1 para a barra 2?
+Considere um sistema elétrico de potência representado pelo diagrama
+unifilar a seguir. A potência injetada na barra 3 e as impedâncias das
+linhas que conectam a barra 1 à barra 2 bem como a barra 2 à barra 3 são
+mensuradas por unidade (pu). Tanto a tensão na barra 1 quanto a tensão na
+barra 3 são iguais a 1,0 pu.
+
+```{{=html}}
+<div style="text-align:center">
+<p style="font-weight:bold; margin-bottom:0">Diagrama unifilar do sistema</p>
+{svg_enunciado}
+</div>
+```
+
+## Enunciado (continuação) {{.smaller}}
+
+Com base nessas informações, é correto dizer que a tensão na barra 2 e o
+fluxo de potência saindo da barra 1 para a barra 2 são, respectivamente,
+
+| (A) $1{{,}}0$ pu e $1{{,}}0$ pu.
+| (B) $1{{,}}0 - j0{{,}}1$ pu e $1{{,}}0$ pu.
+| (C) $1{{,}}0 + j0{{,}}1$ pu e $0{{,}}5$ pu.
+| (D) $1{{,}}0 - j0{{,}}1$ pu e $0{{,}}5$ pu.
+| (E) $1{{,}}0 + j0{{,}}1$ pu e $1{{,}}0$ pu.
+
+## Leitura dos dados
 
 - $V_1 = V_3 = 1{{,}}0\\angle 0^\\circ$ pu
 - $S_{{G3}} = 0{{,}}5 + j0$ pu
@@ -169,7 +206,8 @@ print(f"V2 = {{V2:.3f}} pu   S12 = {{S12:.3f}} pu")
 """
 
 
-def slidev_source(svg_slidev, css_block, *, heading_color=None, answer_color=None):
+def slidev_source(svg_slidev, svg_enunciado, css_block, *, heading_color=None,
+                  answer_color=None):
     """heading_color/answer_color = None -> markup idêntico à versão original
     (sem span de cor); um valor -> envolve título/resposta num <span> colorido."""
     h = (lambda t: f'<span style="color:{heading_color}">{t}</span>') if heading_color else (lambda t: t)
@@ -184,6 +222,33 @@ transition: fade
 # {h("Questão 24")}
 
 Fluxo de potência em três barras
+
+---
+
+# {h("Enunciado")}
+
+Considere um sistema elétrico de potência representado pelo diagrama
+unifilar a seguir. A potência injetada na barra 3 e as impedâncias das
+linhas que conectam a barra 1 à barra 2 bem como a barra 2 à barra 3 são
+mensuradas por unidade (pu). Tanto a tensão na barra 1 quanto a tensão na
+barra 3 são iguais a 1,0 pu.
+
+<p class="text-center font-bold">Diagrama unifilar do sistema</p>
+
+{svg_enunciado}
+
+---
+
+# {h("Enunciado (continuação)")}
+
+Com base nessas informações, é correto dizer que a tensão na barra 2 e o
+fluxo de potência saindo da barra 1 para a barra 2 são, respectivamente,
+
+(A) $1{{,}}0$ pu e $1{{,}}0$ pu.\\
+(B) $1{{,}}0 - j0{{,}}1$ pu e $1{{,}}0$ pu.\\
+(C) $1{{,}}0 + j0{{,}}1$ pu e $0{{,}}5$ pu.\\
+(D) $1{{,}}0 - j0{{,}}1$ pu e $0{{,}}5$ pu.\\
+(E) $1{{,}}0 + j0{{,}}1$ pu e $1{{,}}0$ pu.
 
 ---
 
@@ -247,15 +312,20 @@ def gerar(*, suffix, flow, load, qmd_theme_lines, qmd_logo_line, highlight_open,
 
     frag = lambda i: f'class="fragment" data-fragment-index="{i}"'
     svg_quarto = svg(flow, load, frag(1), frag(2), frag(3))
-    qmd = qmd_source(svg_quarto, theme_lines=qmd_theme_lines, logo_line=qmd_logo_line,
-                      highlight_open=highlight_open, highlight_close=highlight_close)
+    svg_quarto_enun = svg(flow, load, inline_style=False, enunciado=True)
+    qmd = qmd_source(svg_quarto, svg_quarto_enun, theme_lines=qmd_theme_lines,
+                      logo_line=qmd_logo_line, highlight_open=highlight_open,
+                      highlight_close=highlight_close)
     write(OUT / f"questao24{suffix}.qmd", qmd)
 
     vc = lambda i: f'v-click="{i}"'
-    svg_slidev = svg(flow, load, vc(1), vc(2), vc(3), inline_style=False).replace(
+    para_slidev = lambda s: s.replace(
         '<svg xmlns="http://www.w3.org/2000/svg" ', '<svg class="mx-auto" ')
-    md = slidev_source(svg_slidev, css(flow), heading_color=heading_color,
-                        answer_color=answer_color)
+    svg_slidev = para_slidev(svg(flow, load, vc(1), vc(2), vc(3), inline_style=False))
+    svg_slidev_enun = para_slidev(svg(flow, load, inline_style=False, enunciado=True,
+                                      largura=600))
+    md = slidev_source(svg_slidev, svg_slidev_enun, css(flow),
+                        heading_color=heading_color, answer_color=answer_color)
     write(OUT_SLIDEV / f"slides{suffix}.md", md)
 
 
